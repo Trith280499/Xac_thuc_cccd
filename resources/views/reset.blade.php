@@ -6,10 +6,38 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 12px;
+        }
+
         img#preview {
             display: none;
-            max-width: 450px;
+            max-width: 100%;
+            height: auto;
             margin-top: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Căn giữa hình trong card */
+        .preview-wrapper {
+            text-align: center;
+        }
+
+        /* Đảm bảo hiển thị tốt trên mobile */
+        @media (max-width: 576px) {
+            .card {
+                padding: 1rem;
+            }
+            img#preview {
+                max-width: 90%;
+            }
         }
     </style>
 </head>
@@ -22,7 +50,9 @@
             <div class="mb-3">
                 <label class="form-label">Ảnh CCCD (mặt trước):</label>
                 <input type="file" name="cccd" class="form-control" id="cccdInput" accept="image/*" required>
-                <img id="preview" alt="Preview CCCD">
+                <div class="preview-wrapper">
+                    <img id="preview" alt="Preview CCCD">
+                </div>
             </div>
             <button type="button" id="submitBtn" class="btn btn-primary w-100">Xác thực và Reset</button>
         </form>
@@ -65,7 +95,7 @@
 </div>
 
 <script>
-// Show image preview
+// Hiển thị ảnh preview
 document.getElementById('cccdInput').addEventListener('change', function(event) {
     const img = document.getElementById('preview');
     const file = event.target.files[0];
@@ -79,18 +109,18 @@ document.getElementById('cccdInput').addEventListener('change', function(event) 
     }
 });
 
-// Show modal when pressing submit
+// Hiện modal xác nhận
 document.getElementById('submitBtn').addEventListener('click', function() {
     const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
     modal.show();
 });
 
-// Enable confirm button only when checkbox checked
+// Kích hoạt nút xác nhận khi tick checkbox
 document.getElementById('confirmCheck').addEventListener('change', function() {
     document.getElementById('confirmSubmit').disabled = !this.checked;
 });
 
-// Submit form when confirm in modal
+// Gửi form sau khi xác nhận
 document.getElementById('confirmSubmit').addEventListener('click', function() {
     document.getElementById('resetForm').submit();
 });
