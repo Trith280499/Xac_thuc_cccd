@@ -6,48 +6,45 @@ use Illuminate\Http\Request;
 
 class CccdController extends Controller
 {
-    // main function: decide based on input
     public function process(Request $request)
     {
-        $url  = $request->input('url');
-        $text = $request->input('text');
+        if (!$request->hasFile('cccd')) {
+            return response()->json(['error' => 'No image uploaded.'], 400);
+        }
 
-        if (!$url && !$text) {
+        $file = $request->file('cccd');
+        $path = $file->getPathName();
+
+        // Make sure exif extension is available
+        if (!function_exists('exif_read_data')) {
+            return response()->json(['error' => 'EXIF not supported on this server.'], 500);
+        }
+
+        try {
+            $exif = @exif_read_data($path, 0, true);
+            if (!$exif) {
+                return response()->json(['error' => 'Cannot read EXIF metadata.']);
+            }
+
+            $make       = $exif['IFD0']['Make']  ?? 'Unknown';
+            $model      = $exif['IFD0']['Model'] ?? 'Unknown';
+            $dateTaken  = $exif['EXIF']['DateTimeOriginal'] ?? null;
+
+            $today       = now()->format('Y-m-d');
+            $photoDate   = $dateTaken ? date('Y-m-d', strtotime($dateTaken)) : null;
+            $takenToday  = ($photoDate === $today);
+            $device      = trim("$make $model");
+            $isIphone    = stripos($device, 'iphone') !== false;
+
             return response()->json([
-                'error' => 'Please provide either url or text'
-            ], 400);
+                'status'      => 'success',
+                'device'      => $device,
+                'date_taken'  => $dateTaken,
+                'taken_today' => $takenToday,
+                'is_iphone'   => $isIphone,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        if ($url) {
-            return $this->authen($request);
-        }
-
-        if ($text) {
-            return $this->check($request);
-        }
-    }
-
-    // handle image authentication
-    private function authen(Request $request)
-    {
-        $url = $request->input('url');
-
-        return response()->json([
-            'status' => 'success',
-            'type'   => 'authen_cccd',
-            'url'    => $url
-        ]);
-    }
-
-    // handle text checking
-    private function check(Request $request)
-    {
-        $text = $request->input('text');
-
-        return response()->json([
-            'status' => 'success',
-            'type'   => 'check_cccd',
-            'text'   => $text
-        ]);
     }
 }

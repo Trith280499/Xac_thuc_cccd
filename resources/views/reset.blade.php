@@ -66,8 +66,11 @@
   <div class="card p-4 shadow-sm">
     <h3 class="text-center mb-4">Upload ảnh CCCD của bạn</h3>
 
-    <form id="uploadForm" action="/reset" method="POST" enctype="multipart/form-data">
-      <input type="file" id="fileInput" name="cccd" accept="image/*" hidden required>
+    <form id="uploadForm" action="/cccd" method="POST" enctype="multipart/form-data">
+      @csrf
+      <!-- <input type="file" id="fileInput" name="cccd" accept="image/*" hidden required> -->
+<input type="file" id="fileInput" name="cccd"
+       accept="image/*" style="opacity:0; width:0; height:0; position:absolute;" required>
 
       <div class="upload-box" id="dropArea">
         <div id="uploadInfo">
