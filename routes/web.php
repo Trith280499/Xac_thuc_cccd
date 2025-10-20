@@ -17,6 +17,7 @@ Route::get('/', function () {
 });
 Route::get('/reset-form', function () {return view('reset');});
 
-Route::post('/reset', [ResetPassController::class, 'handleReset']);
+// Route::post('/reset', [ResetPassController::class, 'handleReset']);
+Route::post('/form2 ', [ResetPassController::class, 'handleReset']);
 
 Route::post('/cccd', [CccdController::class, 'process']);
