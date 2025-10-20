@@ -1,129 +1,142 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <meta charset="utf-8">
-    <title>Reset Password Sinh viên</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
+  <meta charset="utf-8">
+  <title>Upload ảnh CCCD</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .card { max-width: 500px; margin: 40px auto; border-radius: 12px; }
 
-        .card {
-            max-width: 500px;
-            margin: 0 auto;
-            border-radius: 12px;
-        }
+    /* --- Khung upload --- */
+    .upload-box {
+      border: 2px dashed #cfd8dc;
+      border-radius: 10px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.3s;
+      background-color: #fafafa;
+      position: relative;
+      overflow: hidden;
+    }
+    .upload-box.dragover {
+      border-color: #0d6efd;
+      background-color: #e8f0fe;
+    }
+    .upload-box img#icon {
+      width: 60px;
+      opacity: 0.7;
+      margin-bottom: 10px;
+    }
+    .upload-text { transition: 0.3s; }
 
-        img#preview {
-            display: none;
-            max-width: 100%;
-            height: auto;
-            margin-top: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+    /* --- Ảnh xem trước --- */
+    .preview-image {
+      display: none;
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
 
-        /* Căn giữa hình trong card */
-        .preview-wrapper {
-            text-align: center;
-        }
+    /* --- Thanh tiến trình --- */
+    .progress {
+      height: 10px;
+      margin-top: 15px;
+      display: none;
+      background-color: #eee;
+      border-radius: 5px;
+      overflow: hidden;
+    }
 
-        /* Đảm bảo hiển thị tốt trên mobile */
-        @media (max-width: 576px) {
-            .card {
-                padding: 1rem;
-            }
-            img#preview {
-                max-width: 90%;
-            }
-        }
-    </style>
+    /* --- Chính thanh màu --- */
+    .progress-bar {
+      background: linear-gradient(90deg, #1e88e5, #29b6f6);
+      transition: width 0.4s ease-in-out;
+      height: 100%;
+      width: 0%;
+    }
+  </style>
 </head>
-<body class="bg-light">
-<div class="container mt-5">
-    <div class="card p-4 shadow-sm">
-        <h3 class="text-center mb-4">Reset mật khẩu sinh viên</h3>
-        <form id="resetForm" action="/reset" method="POST" enctype="multipart/form-data">
-            @csrf
-            <div class="mb-3">
-                <label class="form-label">Ảnh CCCD (mặt trước):</label>
-                <input type="file" name="cccd" class="form-control" id="cccdInput" accept="image/*" required>
-                <div class="preview-wrapper">
-                    <img id="preview" alt="Preview CCCD">
-                </div>
-            </div>
-            <button type="button" id="submitBtn" class="btn btn-primary w-100">Xác thực và Reset</button>
-        </form>
-    </div>
-</div>
+<body>
+<div class="container">
+  <div class="card p-4 shadow-sm">
+    <h3 class="text-center mb-4">Upload ảnh CCCD của bạn</h3>
 
-<!-- Modal -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmModalLabel">Xác nhận reset mật khẩu</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-      </div>
-      <div class="modal-body" style="max-height: 300px; overflow-y: auto;">
-        <p>
-          Vui lòng đọc kỹ các điều khoản và xác nhận bạn đồng ý trước khi reset mật khẩu.
-        </p>
-        <p>
-          - Bạn cam kết rằng ảnh CCCD là thật và thuộc về bạn.<br>
-          - Thông tin được cung cấp sẽ chỉ được sử dụng cho mục đích xác thực tài khoản.<br>
-          - Việc gửi thông tin giả mạo có thể dẫn đến việc bị khóa tài khoản.
-        </p>
-        <p>
-          (Kéo xuống để xác nhận)
-        </p>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" value="" id="confirmCheck">
-          <label class="form-check-label" for="confirmCheck">
-            Tôi đã đọc và đồng ý với các điều khoản trên.
-          </label>
+    <form id="uploadForm" action="/reset" method="POST" enctype="multipart/form-data">
+      <input type="file" id="fileInput" name="cccd" accept="image/*" hidden required>
+
+      <div class="upload-box" id="dropArea">
+        <div id="uploadInfo">
+          <img id="icon" src="https://cdn-icons-png.flaticon.com/512/1829/1829589.png" alt="upload">
+          <p class="fw-bold mb-1 upload-text">Thả ảnh vào hoặc <span class="text-primary">browse</span></p>
+          <small class="text-muted upload-text">Supports: JPG, JPEG2000, PNG</small>
         </div>
+        <img id="previewImage" class="preview-image" alt="Preview CCCD">
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-        <button type="button" id="confirmSubmit" class="btn btn-primary" disabled>Xác nhận & Gửi</button>
+
+      <div class="progress mt-3">
+        <div class="progress-bar" id="progressBar"></div>
       </div>
-    </div>
+
+      <button type="submit" class="btn btn-primary w-100 mt-3">Xác thực</button>
+    </form>
   </div>
 </div>
 
 <script>
-// Hiển thị ảnh preview
-document.getElementById('cccdInput').addEventListener('change', function(event) {
-    const img = document.getElementById('preview');
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            img.src = e.target.result;
-            img.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    }
-});
+const dropArea = document.getElementById('dropArea');
+const fileInput = document.getElementById('fileInput');
+const previewImage = document.getElementById('previewImage');
+const progressBar = document.getElementById('progressBar');
+const progressContainer = document.querySelector('.progress');
+const uploadInfo = document.getElementById('uploadInfo');
 
-// Hiện modal xác nhận
-document.getElementById('submitBtn').addEventListener('click', function() {
-    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-    modal.show();
-});
+// Click chọn file
+dropArea.addEventListener('click', () => fileInput.click());
 
-// Kích hoạt nút xác nhận khi tick checkbox
-document.getElementById('confirmCheck').addEventListener('change', function() {
-    document.getElementById('confirmSubmit').disabled = !this.checked;
+// Drag effect
+dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('dragover'); });
+dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+dropArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropArea.classList.remove('dragover');
+  fileInput.files = e.dataTransfer.files;
+  handleFile(fileInput.files[0]);
 });
+fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
 
-// Gửi form sau khi xác nhận
-document.getElementById('confirmSubmit').addEventListener('click', function() {
-    document.getElementById('resetForm').submit();
-});
+function handleFile(file) {
+  if (!file) return;
+  uploadInfo.style.opacity = '0';
+  progressContainer.style.display = 'block';
+  progressBar.style.width = '0%';
+  previewImage.style.display = 'none';
+
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += Math.random() * 10;
+    if (progress >= 95) progress = 95;
+    progressBar.style.width = progress + '%';
+  }, 200);
+
+  const reader = new FileReader();
+  reader.onload = e => previewImage.src = e.target.result;
+  reader.onloadend = () => {
+    clearInterval(interval);
+    progressBar.style.width = '100%';
+    setTimeout(() => {
+      progressContainer.style.display = 'none';
+      uploadInfo.style.display = 'none';
+      previewImage.style.display = 'block';
+      dropArea.style.backgroundColor = '#fff';
+      dropArea.style.borderColor = '#cfd8dc';
+    }, 500);
+  };
+  reader.readAsDataURL(file);
+}
 </script>
 </body>
 </html>
