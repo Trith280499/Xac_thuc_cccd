@@ -83,44 +83,58 @@
         <!-- Trạng thái khôi phục -->
         <div class="form-section">
           <h5>Trạng thái khôi phục tài khoản</h5>
-          <div class="table-responsive">
-            <table class="table table-bordered align-middle mb-0">
-              <thead>
-                <tr>
-                  <th style="width: 50%;">Loại tài khoản</th>
-                  <th style="width: 40%;">Tài khoản</th>
-                  <th style="width: 10%;">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <img src="{{ asset('images/teams.png') }}" alt="Microsoft Teams" width="26" class="me-2">
-                    Microsoft Teams<br>
-                    <small class="text-muted">(MSSV@student.hcmue.edu.vn)</small>
-                  </td>
-                  <td><input type="text" name="email_account" class="form-control" value="{{ $edu->email ?? '' }}" placeholder="Email"></td>
-                  <td class="text-center">
-                    <span class="status-text" onclick="recoverAccount(this, 'Microsoft Teams')">Khôi phục</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>📝 VLE (học trực tuyến)</td>
-                  <td><input type="text" name="moodle_account" class="form-control" value="{{ $vle->username ?? '' }}" placeholder="Tên đăng nhập"></td>
-                  <td class="text-center">
-                    <span class="status-text" onclick="recoverAccount(this, 'VLE')">Khôi phục</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>👨‍🎓 Portal (MSSV)</td>
-                  <td><input type="text" name="portal_account" class="form-control" value="{{ $msteam->username ?? '' }}" placeholder="Tài khoản Portal"></td>
-                  <td class="text-center">
-                    <span class="status-text" onclick="recoverAccount(this, 'Portal')">Khôi phục</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle mb-0">
+      <thead>
+        <tr>
+          <th style="width: 50%;">Loại tài khoản</th>
+          <th style="width: 40%;">Tài khoản</th>
+          <th style="width: 10%;">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <img src="{{ asset('images/teams.png') }}" alt="Microsoft Teams" width="26" class="me-2">
+            Microsoft Teams<br>
+            <small class="text-muted">(MSSV@student.hcmue.edu.vn)</small>
+          </td>
+          <td>
+            <input type="text" name="email_account" class="form-control"
+                   value="{{ $edu->email ?? '' }}" placeholder="Email">
+          </td>
+          <td class="text-center">
+            <span class="status-text text-primary" style="cursor:pointer;"
+                  onclick="recoverAccount(this, 'Microsoft Teams')">Khôi phục</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>📝 VLE (học trực tuyến)</td>
+          <td>
+            <input type="text" name="moodle_account" class="form-control"
+                   value="{{ $vle->username ?? '' }}" placeholder="Tên đăng nhập">
+          </td>
+          <td class="text-center">
+            <span class="status-text text-primary" style="cursor:pointer;"
+                  onclick="recoverAccount(this, 'VLE')">Khôi phục</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>👨‍🎓 Portal (MSSV)</td>
+          <td>
+            <input type="text" name="portal_account" class="form-control"
+                   value="{{ $msteam->username ?? '' }}" placeholder="Tài khoản Portal">
+          </td>
+          <td class="text-center">
+            <span class="status-text text-primary" style="cursor:pointer;"
+                  onclick="recoverAccount(this, 'Portal')">Khôi phục</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
         </div>
 
         <!-- Lịch sử khôi phục -->
