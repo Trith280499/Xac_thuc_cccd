@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Bảng Dữ Liệu Tài Khoản</title>
+  <title>Bảng dữ liệu đã khôi phục</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -48,7 +48,7 @@
 </head>
 <body>
 
-<h2>Bảng Dữ Liệu Tài Khoản</h2>
+<h2>BẢNG DỮ LIỆU ĐÃ KHÔI PHỤC</h2>
 
 <table>
   <thead>

@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Lưu dữ liệu cache (key, value, expiration) Nơi lưu dữ liệu tạm giúp tăng tốc web
         Schema::create('cache', function (Blueprint $table) {
-            $table->string('key')->primary();
-            $table->mediumText('value');
-            $table->integer('expiration');
+            $table->string('key')->primary(); // Khóa duy nhất cho cache
+            $table->mediumText('value'); // Dữ liệu được lưu trữ
+            $table->integer('expiration'); //Lưu thông tin trong bao nhiêu phút
         });
 
+        // Quản lý khóa tránh ghi trùng cache, Ngăn lỗi khi nhiều tiến trình cùng ghi cache
         Schema::create('cache_locks', function (Blueprint $table) {
-            $table->string('key')->primary();
-            $table->string('owner');
-            $table->integer('expiration');
+            $table->string('key')->primary(); // Khóa của lock
+            $table->string('owner'); // Ai đang giữ lock này
+            $table->integer('expiration'); //Lưu thông tin trong bao nhiêu phút
         });
     }
 

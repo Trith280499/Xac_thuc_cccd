@@ -13,11 +13,18 @@ use App\Http\Controllers\CccdController;
 use App\Http\Controllers\CccdAuthController;
 
 Route::get('/', function () {
-    return view('upload');
+    return view('form1');
 });
-Route::get('/upload-form', function () {return view('upload');});
+ // return view('upload');
+// });
+// Route::get('/upload-form', function () {return view('upload');});
+Route::get('/form1', function () {
+    return view('form1');
+});
 
-// Route::post('/reset', [ResetPassController::class, 'handleReset']);
+// Route::get('/reset-form', function () {return view('reset');});
+
+//Route::post('/reset', [ResetPassController::class, 'handleReset']);
 // Route::get('/', function () {
 //     return view('form2');
 // });
