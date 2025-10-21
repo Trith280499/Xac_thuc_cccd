@@ -21,6 +21,10 @@ Route::get('/reset-form', function () {return view('reset');});
 // Route::get('/', function () {
 //     return view('form2');
 // });
+
+Route::post('/student-info', [ResetPassController::class, 'getInfo']);
+Route::post('/reset-password', [ResetPassController::class, 'handleReset']);
+
 Route::prefix('form2')
 ->group(function() {
     Route::get('/view', function () {return view('form2');});
