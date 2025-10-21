@@ -8,100 +8,54 @@ use Illuminate\Support\Facades\DB;
 class CccdAuthController extends Controller
 {
     //giả lập function xác thực cccd, trả về cccd từ hình ảnh
-    public function authenticate(Request $request)
-    {
-        $imageUrl = $request->input('image_url');
-
-        if (!$imageUrl) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Không nhận được đường dẫn ảnh CCCD (image_url).'
-            ], 400);
-        }
-
-        $isAuthorized = true;
-
-        if (stripos($imageUrl, 'valid') !== false || stripos($imageUrl, 'approved') !== false) {
-            $isAuthorized = false;
-        }
-
-        $text = '001123456789'; // giả lập cccd trả về
-
-        if ($isAuthorized) {
-            return response()->json([
-                'status' => 'success',
-                // 'message' => 'Xác thực CCCD thành công.',
-                'cccd_text' => $text
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'Không thể xác thực CCCD.'
-            ], 200);
-        }
-    }
-
-    //-----------------------------------------------------------------------------
-    //giả lập check tồn tại sinh viên theo cccd
-   public function checkInfo(Request $request)
+  public function authenticate(Request $request)
 {
-    $cccdText = $request->input('cccd_text');
+    $encoded_img = $request->input('image_base64');
 
-    if (!$cccdText) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Không có mã CCCD nào được cung cấp.'
-        ], 400);
+    if (!$encoded_img) {
+        return response()->json(['status' => 'error', 'message' => 'Thiếu dữ liệu ảnh'], 400);
     }
 
-    // check tồn tại cccd có trạng thái active
-    $record = DB::table('can_cuoc_cong_dan')
-        ->where('so_cccd', $cccdText)
-        ->where('trang_thai', 'active')
-        ->first();
-
-    if (!$record) {
-        return response()->json([
-            'status' => 'fail',
-            'message' => 'Không tìm thấy thông tin CCCD hoạt động.'
-        ], 200);
+    //  Decode base64
+    if (preg_match('/^data:image\/(\w+);base64,/', $encoded_img, $type)) {
+        $encoded_img = substr($encoded_img, strpos($encoded_img, ',') + 1);
+        $type = strtolower($type[1]);
+        $imageData = base64_decode($encoded_img);
     }
 
-    // tìm sinhvien theo cccd
-    $student = DB::table('sinh_vien')
-        ->where('so_cccd', $cccdText)
-        ->first();
+    $cccdText = '001123456789'; // giả lập OCR
+    $base64Img = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
 
-    if (!$student) {
-        return response()->json([
-            'status' => 'fail',
-            'message' => 'Không tìm thấy sinh viên khớp với CCCD này.'
-        ], 200);
-    }
+    return $this->checkInfoInternal($cccdText, $base64Img);
+}
 
-    // lấy thông tin 3 tài khoản
-    $edu = DB::table('tai_khoan_edu')
+private function checkInfoInternal($cccdText, $decodedBase64)
+{
+    $student = DB::table('sinh_vien')->where('so_cccd', $cccdText)->first();
+
+    $eduAccounts = DB::table('tai_khoan_edu')
         ->select('tai_khoan', 'mat_khau', 'ngay_reset')
-        ->where('id', $student->tai_khoan_edu_id)
-        ->first();
+        ->where('id', $student->tai_khoan_edu_id ?? null)
+        ->get();
 
-    $vle = DB::table('tai_khoan_vle')
+    $vleAccounts = DB::table('tai_khoan_vle')
         ->select('tai_khoan', 'mat_khau', 'ngay_reset')
-        ->where('id', $student->tai_khoan_vle_id)
-        ->first();
+        ->where('id', $student->tai_khoan_vle_id ?? null)
+        ->get();
 
-    $msteam = DB::table('tai_khoan_ms_team')
+    $msteamAccounts = DB::table('tai_khoan_ms_team')
         ->select('tai_khoan', 'mat_khau', 'ngay_reset')
-        ->where('id', $student->tai_khoan_ms_team_id)
-        ->first();
+        ->where('id', $student->tai_khoan_ms_team_id ?? null)
+        ->get();
 
-    // trả qua form2
+    // ✅ Trả về view form2 luôn
     return view('form2', [
-        'record' => $record,
-        'student' => $student,
-        'edu' => $edu,
-        'vle' => $vle,
-        'msteam' => $msteam
+        'sv' => $student,
+        'cccd' => $cccdText,
+        'decodedBase64' => $decodedBase64,
+        'eduAccounts' => $eduAccounts,
+        'vleAccounts' => $vleAccounts,
+        'msteamAccounts' => $msteamAccounts
     ]);
 }
 

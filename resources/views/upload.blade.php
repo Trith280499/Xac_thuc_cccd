@@ -152,10 +152,17 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-  const fakeImageUrl = '/storage/uploads/cccd/test_image.jpg'; // 🧠 Replace later with real image URL
+  const fileInput = document.getElementById('fileInput');
+  const file = fileInput.files[0];
+
+  if (!file) {
+    showAlert('Vui lòng chọn ảnh CCCD trước khi xác thực.', 'warning');
+    return;
+  }
 
   try {
-    // giả lập gọi api trích xuất cccd
+    const base64Image = await toBase64(file);
+
     const authRes = await fetch('/cccd-auth', {
       method: 'POST',
       headers: {
@@ -163,29 +170,34 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         'X-CSRF-TOKEN': token
       },
       credentials: 'same-origin',
-      body: JSON.stringify({ image_url: fakeImageUrl })
+      body: JSON.stringify({ image_base64: base64Image })
     });
 
     const data = await authRes.json();
 
-    // thành công giả lập gọi api lấy thông tin tk sinh viên
+    // 3️⃣ Handle response
     if (data.status === 'success') {
-      console.log('CCCD xác thực thành công, gọi API check-info...');
-
-      if (data.status === 'success') {
-  window.location.href = `/check-info?cccd_text=${data.cccd_text}`;
-}
-      if (checkData.status === 'success') {
-        showAlert(' Kiểm tra thông tin thành công: ' + checkData.details, 'success');
-      } else {
-        showAlert(' Không thể kiểm tra thông tin: ' + checkData.message, 'warning');
-      }
+      console.log('✅ CCCD xác thực thành công, chuyển sang trang kiểm tra...');
+      window.location.href = `/check-info?cccd_text=${data.cccd_text}`;
+    } else {
+      showAlert(data.message || 'Không thể xác thực CCCD.', 'danger');
     }
+
   } catch (err) {
     console.error(err);
     showAlert('Lỗi khi gửi yêu cầu: ' + err.message, 'danger');
   }
 });
+
+// helper: convert file to Base64
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
 
 function showAlert(message, type) {
   const alertBox = document.getElementById('alertBox');
