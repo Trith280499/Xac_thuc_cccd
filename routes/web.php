@@ -17,7 +17,7 @@ Route::get('/', function () {
 });
 Route::get('/reset-form', function () {return view('reset');});
 
-// Route::post('/reset', [ResetPassController::class, 'handleReset']);
+//Route::post('/reset', [ResetPassController::class, 'handleReset']);
 // Route::get('/', function () {
 //     return view('form2');
 // });
@@ -37,5 +37,11 @@ Route::prefix('form4')
 ->group(function() {
     Route::get('/view', function () {return view('form4');});
 });
+
+Route::get('/form1', function () {
+    return view('form1');
+});
+
+
 
 Route::post('/cccd', [CccdController::class, 'process']);
