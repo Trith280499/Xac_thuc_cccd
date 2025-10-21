@@ -49,7 +49,8 @@ Route::prefix('form4')
 // Route::post('/cccd', [CccdController::class, 'process'])->name('cccd.process');
 
 //giả lập api xác thực cccd
-Route::post('/cccd-auth', [CccdAuthController::class, 'authenticate'])->name('cccd.auth');
+// Route::post('/cccd-auth', [CccdAuthController::class, 'authenticate'])->name('cccd.auth');
 
 //api gọi để kiểm tra tồn tại sinh viên theo cccd
-Route::match(['get', 'post'], '/check-info', [CccdAuthController::class, 'checkInfo'])->name('cccd.check');
+Route::post('/cccd-auth', [CccdAuthController::class, 'authenticate'])->name('cccd.auth');
+// Route::match(['get', 'post'], '/check-info', [CccdAuthController::class, 'checkInfo'])->name('cccd.check');

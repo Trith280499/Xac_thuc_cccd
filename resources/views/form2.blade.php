@@ -59,7 +59,16 @@
   <div class="container">
     <div class="card shadow-lg p-4">
       <h3 class="text-center mb-4 text-primary">XÁC NHẬN VÀ KHÔI PHỤC TÀI KHOẢN SINH VIÊN</h3>
-
+    <!-- test truyền ảnh thẻ -->
+@if(!empty($decodedBase64))
+  <div class="text-center mb-4">
+    <img src="{{ $decodedBase64 }}" 
+         alt="Ảnh CCCD" 
+         class="img-fluid rounded shadow-sm" 
+         style="max-height: 280px; border: 1px solid #dee2e6;">
+    <p class="text-muted mt-2">Ảnh CCCD đã tải lên</p>
+  </div>
+@endif
       <form id="form2" action="/reset/confirm" method="POST">
         @csrf
 
@@ -81,8 +90,8 @@
         </div>
 
         <!-- Trạng thái khôi phục -->
-        <div class="form-section">
-          <h5>Trạng thái khôi phục tài khoản</h5>
+       <div class="form-section">
+  <h5>Trạng thái khôi phục tài khoản</h5>
   <div class="table-responsive">
     <table class="table table-bordered align-middle mb-0">
       <thead>
@@ -94,77 +103,97 @@
       </thead>
       <tbody>
         <tr>
+          <td><img src="{{ asset('images/teams.png') }}" alt="Teams" width="26" class="me-2"> Microsoft Teams</td>
           <td>
-            <img src="{{ asset('images/teams.png') }}" alt="Microsoft Teams" width="26" class="me-2">
-            Microsoft Teams<br>
-            <small class="text-muted">(MSSV@student.hcmue.edu.vn)</small>
-          </td>
-          <td>
-            <input type="text" name="email_account" class="form-control"
-                   value="{{ $edu->email ?? '' }}" placeholder="Email">
+            <input type="text" class="form-control" 
+                   value="{{ $eduAccounts->first()->tai_khoan ?? '' }}" readonly>
           </td>
           <td class="text-center">
-            <span class="status-text text-primary" style="cursor:pointer;"
-                  onclick="recoverAccount(this, 'Microsoft Teams')">Khôi phục</span>
+            <span class="status-text text-primary" onclick="recoverAccount(this, 'Teams')">Khôi phục</span>
           </td>
         </tr>
 
         <tr>
           <td>📝 VLE (học trực tuyến)</td>
           <td>
-            <input type="text" name="moodle_account" class="form-control"
-                   value="{{ $vle->username ?? '' }}" placeholder="Tên đăng nhập">
+            <input type="text" class="form-control" 
+                   value="{{ $vleAccounts->first()->tai_khoan ?? '' }}" readonly>
           </td>
           <td class="text-center">
-            <span class="status-text text-primary" style="cursor:pointer;"
-                  onclick="recoverAccount(this, 'VLE')">Khôi phục</span>
+            <span class="status-text text-primary" onclick="recoverAccount(this, 'VLE')">Khôi phục</span>
           </td>
         </tr>
 
         <tr>
           <td>👨‍🎓 Portal (MSSV)</td>
           <td>
-            <input type="text" name="portal_account" class="form-control"
-                   value="{{ $msteam->username ?? '' }}" placeholder="Tài khoản Portal">
+            <input type="text" class="form-control" 
+                   value="{{ $msteamAccounts->first()->tai_khoan ?? '' }}" readonly>
           </td>
           <td class="text-center">
-            <span class="status-text text-primary" style="cursor:pointer;"
-                  onclick="recoverAccount(this, 'Portal')">Khôi phục</span>
+            <span class="status-text text-primary" onclick="recoverAccount(this, 'Portal')">Khôi phục</span>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-        </div>
+</div>
+
 
         <!-- Lịch sử khôi phục -->
         <div class="form-section">
-          <h5>Lịch sử khôi phục</h5>
-          <div class="table-responsive">
-            <table class="table table-bordered align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>Loại tài khoản</th>
-                  <th>Tên tài khoản</th>
-                  <th>Mật khẩu</th>
-                  <th>Ngày</th>
-                  <th>Giờ</th>
-                  <th>Tháng</th>
-                  <th>Năm</th>
-                </tr>
-              </thead>
-              <tbody id="historyTable">
-                <tr class="text-center text-muted">
-                  <td colspan="7">Chưa có lịch sử khôi phục nào</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+  <h5>Lịch sử khôi phục</h5>
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Loại tài khoản</th>
+          <th>Tài khoản</th>
+          <th>Mật khẩu</th>
+          <th>Ngày reset</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{-- EDU --}}
+        @foreach ($eduAccounts as $acc)
+        <tr>
+          <td>Microsoft Teams</td>
+          <td>{{ $acc->tai_khoan }}</td>
+          <td>{{ $acc->mat_khau }}</td>
+          <td>{{ $acc->ngay_reset ?? '---' }}</td>
+        </tr>
+        @endforeach
 
-      </form>
-    </div>
+        {{-- VLE --}}
+        @foreach ($vleAccounts as $acc)
+        <tr>
+          <td>VLE</td>
+          <td>{{ $acc->tai_khoan }}</td>
+          <td>{{ $acc->mat_khau }}</td>
+          <td>{{ $acc->ngay_reset ?? '---' }}</td>
+        </tr>
+        @endforeach
+
+        {{-- MSTeams --}}
+        @foreach ($msteamAccounts as $acc)
+        <tr>
+          <td>Portal</td>
+          <td>{{ $acc->tai_khoan }}</td>
+          <td>{{ $acc->mat_khau }}</td>
+          <td>{{ $acc->ngay_reset ?? '---' }}</td>
+        </tr>
+        @endforeach
+
+        @if ($eduAccounts->isEmpty() && $vleAccounts->isEmpty() && $msteamAccounts->isEmpty())
+        <tr class="text-center text-muted">
+          <td colspan="4">Chưa có lịch sử khôi phục nào</td>
+        </tr>
+        @endif
+      </tbody>
+    </table>
   </div>
+</div>
+
 
   <script>
     function recoverAccount(el, type) {
