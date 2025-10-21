@@ -85,22 +85,35 @@
             </thead>
             <tbody>
               <tr>
-                <td>📧 Email sinh viên (@student.hcmue.edu.vn)</td>
-                <td><input type="text" name="email_account" class="form-control" value="{{ $edu->email ?? '' }}" placeholder="Nhập email"></td>
-                <td class="text-center"><input type="checkbox" name="reset_email"></td>
-              </tr>
-              <tr>
-                <td>📝 Tài khoản VLE (học trực tuyến)</td>
-                <td><input type="text" name="moodle_account" class="form-control" value="{{ $vle->username ?? '' }}" placeholder="Nhập tên đăng nhập"></td>
-                <td class="text-center"><input type="checkbox" name="reset_moodle"></td>
-              </tr>
-              <tr>
-                <td>🖥️ Tài khoản Microsoft Team</td>
-                <td>
-                <input type="text" name="portal_account" class="form-control" value="{{ $msteam->username ?? '' }}" placeholder="Nhập tài khoản Portal">
-                </td>
-                <td class="text-center"><input type="checkbox" name="reset_portal"></td>
-              </tr>
+  <td>📧 Email sinh viên (@student.hcmue.edu.vn)</td>
+  <td>
+    <input type="text" class="form-control" value="{{ $edu->tai_khoan ?? '' }}" readonly>
+    <small>Mật khẩu: <b>{{ $edu->mat_khau ?? '' }}</b></small><br>
+    <small>Lần reset: {{ $edu->ngay_reset ?? 'Chưa có' }}</small>
+  </td>
+  <td class="text-center"><input type="checkbox" name="reset_email"></td>
+</tr>
+
+<tr>
+  <td>📝 Tài khoản VLE (học trực tuyến)</td>
+  <td>
+    <input type="text" class="form-control" value="{{ $vle->tai_khoan ?? '' }}" readonly>
+    <small>Mật khẩu: <b>{{ $vle->mat_khau ?? '' }}</b></small><br>
+    <small>Lần reset: {{ $vle->ngay_reset ?? 'Chưa có' }}</small>
+  </td>
+  <td class="text-center"><input type="checkbox" name="reset_moodle"></td>
+</tr>
+
+<tr>
+  <td>🖥️ Tài khoản Microsoft Team</td>
+  <td>
+    <input type="text" class="form-control" value="{{ $msteam->tai_khoan ?? '' }}" readonly>
+    <small>Mật khẩu: <b>{{ $msteam->mat_khau ?? '' }}</b></small><br>
+    <small>Lần reset: {{ $msteam->ngay_reset ?? 'Chưa có' }}</small>
+  </td>
+  <td class="text-center"><input type="checkbox" name="reset_portal"></td>
+</tr>
+
             </tbody>
           </table>
         </div>

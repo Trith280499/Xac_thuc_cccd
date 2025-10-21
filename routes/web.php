@@ -10,12 +10,12 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\CccdController;
-
+use App\Http\Controllers\CccdAuthController;
 
 Route::get('/', function () {
-    return view('reset');
+    return view('upload');
 });
-Route::get('/reset-form', function () {return view('reset');});
+Route::get('/upload-form', function () {return view('upload');});
 
 // Route::post('/reset', [ResetPassController::class, 'handleReset']);
 // Route::get('/', function () {
@@ -38,4 +38,11 @@ Route::prefix('form4')
     Route::get('/view', function () {return view('form4');});
 });
 
-Route::post('/cccd', [CccdController::class, 'process']);
+//api cho check up ảnh từ điện thoại hay up ảnh trong ngày
+// Route::post('/cccd', [CccdController::class, 'process'])->name('cccd.process');
+
+//giả lập api xác thực cccd
+Route::post('/cccd-auth', [CccdAuthController::class, 'authenticate'])->name('cccd.auth');
+
+//api gọi để kiểm tra tồn tại sinh viên theo cccd
+Route::match(['get', 'post'], '/check-info', [CccdAuthController::class, 'checkInfo'])->name('cccd.check');
