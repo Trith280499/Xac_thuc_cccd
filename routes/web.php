@@ -13,9 +13,14 @@ use App\Http\Controllers\CccdController;
 
 
 Route::get('/', function () {
-    return view('reset');
+    return view('form1');
 });
-Route::get('/reset-form', function () {return view('reset');});
+
+Route::get('/form1', function () {
+    return view('form1');
+});
+
+// Route::get('/reset-form', function () {return view('reset');});
 
 //Route::post('/reset', [ResetPassController::class, 'handleReset']);
 // Route::get('/', function () {

@@ -42,7 +42,7 @@
         <!-- Logo trường -->
        <img src="{{ asset('images/Logo HCMUE.png') }}" alt="Logo SPHCM" class="logo">
 
-        <h2 class="mb-3" style="color:#124874;">🎉 Khôi Phục Thành Công!</h2>
+        <h2 class="mb-3" style="color:#124874;">🎉 KHÔI PHỤC THÀNH CÔNG!</h2>
         <p class="mb-4">Tài khoản của bạn đã được khôi phục thành công. Dưới đây là thông tin đăng nhập mới:</p>
         <div class="mb-3">
             <strong>User:</strong> <span class="text-user">student001</span>

@@ -24,21 +24,6 @@
       margin-bottom: 20px;
     }
 
-    .form-section h5 {
-      margin-bottom: 15px;
-      color: #495057;
-    }
-
-    .btn-reset {
-      font-size: 1.1rem;
-      font-weight: 500;
-    }
-
-    table {
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
     table th {
       background-color: #e9ecef;
       text-align: center;
@@ -48,25 +33,24 @@
 
     table td {
       vertical-align: middle;
-      word-wrap: break-word;
-      word-break: break-word;
     }
 
-    @media (max-width: 768px) {
-      .table-responsive {
-        border-radius: 10px;
-        overflow-x: auto;
-      }
-      table td img {
-        width: 22px;
-      }
-      table th, table td {
-        font-size: 0.9rem;
-        white-space: nowrap;
-      }
-      .btn-reset {
-        font-size: 1rem;
-      }
+    .status-text {
+      font-weight: 500;
+      color: #0d6efd;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .status-text:hover {
+      color: #084298;
+      text-decoration: underline;
+    }
+
+    .status-success {
+      color: #198754 !important;
+      cursor: default;
+      text-decoration: none;
     }
   </style>
 </head>
@@ -96,9 +80,9 @@
           </div>
         </div>
 
-        <!-- Bảng chọn tài khoản -->
+        <!-- Trạng thái khôi phục -->
         <div class="form-section">
-          <h5>Chọn tài khoản cần reset</h5>
+          <h5>Trạng thái khôi phục tài khoản</h5>
           <div class="table-responsive">
             <table class="table table-bordered align-middle mb-0">
               <thead>
@@ -112,43 +96,99 @@
                 <tr>
                   <td>
                     <img src="{{ asset('images/teams.png') }}" alt="Microsoft Teams" width="26" class="me-2">
-                    Tài khoản Microsoft Team<br>
+                    Microsoft Teams<br>
                     <small class="text-muted">(MSSV@student.hcmue.edu.vn)</small>
                   </td>
-                  <td><input type="text" name="email_account" class="form-control" value="{{ $edu->email ?? '' }}" placeholder="Nhập email"></td>
-                  <td class="text-center"><input type="checkbox" name="reset_email"></td>
+                  <td><input type="text" name="email_account" class="form-control" value="{{ $edu->email ?? '' }}" placeholder="Email"></td>
+                  <td class="text-center">
+                    <span class="status-text" onclick="recoverAccount(this, 'Microsoft Teams')">Khôi phục</span>
+                  </td>
                 </tr>
                 <tr>
-                  <td>
-                    <!-- <img src="{{ asset('images/vle.png') }}" alt="VLE" width="26" class="me-2"> -->
-                     📝
-                    Tài khoản VLE (học trực tuyến)
+                  <td>📝 VLE (học trực tuyến)</td>
+                  <td><input type="text" name="moodle_account" class="form-control" value="{{ $vle->username ?? '' }}" placeholder="Tên đăng nhập"></td>
+                  <td class="text-center">
+                    <span class="status-text" onclick="recoverAccount(this, 'VLE')">Khôi phục</span>
                   </td>
-                  <td><input type="text" name="moodle_account" class="form-control" value="{{ $vle->username ?? '' }}" placeholder="Nhập tên đăng nhập"></td>
-                  <td class="text-center"><input type="checkbox" name="reset_moodle"></td>
                 </tr>
                 <tr>
-                  <td>
-                    <!-- <img src="{{ asset('images/portal.png') }}" alt="Portal" width="26" class="me-2"> -->
-                     👨‍🎓
-                    Tài khoản Online (MSSV)
+                  <td>👨‍🎓 Portal (MSSV)</td>
+                  <td><input type="text" name="portal_account" class="form-control" value="{{ $msteam->username ?? '' }}" placeholder="Tài khoản Portal"></td>
+                  <td class="text-center">
+                    <span class="status-text" onclick="recoverAccount(this, 'Portal')">Khôi phục</span>
                   </td>
-                  <td><input type="text" name="portal_account" class="form-control" value="{{ $msteam->username ?? '' }}" placeholder="Nhập tài khoản Portal"></td>
-                  <td class="text-center"><input type="checkbox" name="reset_portal"></td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Nút Reset -->
-        <div class="text-center">
-          <button type="submit" class="btn btn-danger w-100 btn-reset">
-            🔄 Reset các tài khoản đã chọn
-          </button>
+        <!-- Lịch sử khôi phục -->
+        <div class="form-section">
+          <h5>Lịch sử khôi phục</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Loại tài khoản</th>
+                  <th>Tên tài khoản</th>
+                  <th>Mật khẩu</th>
+                  <th>Ngày</th>
+                  <th>Giờ</th>
+                  <th>Tháng</th>
+                  <th>Năm</th>
+                </tr>
+              </thead>
+              <tbody id="historyTable">
+                <tr class="text-center text-muted">
+                  <td colspan="7">Chưa có lịch sử khôi phục nào</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+
       </form>
     </div>
   </div>
+
+  <script>
+    function recoverAccount(el, type) {
+      if (el.classList.contains('status-success')) return;
+
+      alert(`🔄 Đang khôi phục tài khoản ${type}...`);
+
+      el.textContent = 'Đang khôi phục...';
+      el.style.pointerEvents = 'none';
+
+      setTimeout(() => {
+        el.textContent = `✅ ${type} đã khôi phục xong`;
+        el.classList.add('status-success');
+
+        // Thêm vào bảng lịch sử
+        addHistoryRow(type);
+      }, 1500);
+    }
+
+    function addHistoryRow(type) {
+      const table = document.getElementById('historyTable');
+      const now = new Date();
+
+      const row = `
+        <tr>
+          <td>${type}</td>
+          <td>${type.toLowerCase()}_user</td>
+          <td>${Math.random().toString(36).slice(-8)}</td>
+          <td>${now.getDate()}</td>
+          <td>${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}</td>
+          <td>${now.getMonth() + 1}</td>
+          <td>${now.getFullYear()}</td>
+        </tr>
+      `;
+
+      if (table.querySelector('.text-muted')) table.innerHTML = '';
+      table.insertAdjacentHTML('afterbegin', row);
+    }
+  </script>
 </body>
 </html>
