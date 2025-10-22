@@ -98,43 +98,41 @@
 
   document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-
+    
     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const file = fileInput.files[0];
 
     if (!file) {
-      showAlert('Vui lòng chọn ảnh CCCD trước khi xác thực.', 'warning');
-      return;
+        showAlert('Vui lòng chọn ảnh CCCD trước khi xác thực.', 'warning');
+        return;
     }
 
     try {
-      const base64Image = await toBase64(file);
+        const base64Image = await toBase64(file);
+        const formData = new FormData();
+        formData.append('image_base64', base64Image);
 
-      // giả lập xác thực cccd
-      const authRes = await fetch('/cccd-auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': token
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({ image_base64: base64Image })
-      });
+        const response = await fetch('/cccd-auth', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'text/html'
+            },
+            body: formData
+        });
 
-      // Hiển thị form2
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-      //check lại logic chỗ này
-      const html = await authRes.text();
-      const doc = new DOMParser().parseFromString(html, "text/html");
-      document.documentElement.replaceWith(doc.documentElement);
-
+        // Chuyển hướng đến form2 sau khi xác thực thành công
+        window.location.href = '/form2/view';
 
     } catch (err) {
-      console.error(err);
-      showAlert('Lỗi khi gửi yêu cầu: ' + err.message, 'danger');
+        console.error(err);
+        showAlert('Lỗi khi gửi yêu cầu: ' + err.message, 'danger');
     }
-  });
-
+});
 </script>
 </body>
 </html>

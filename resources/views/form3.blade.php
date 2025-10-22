@@ -43,14 +43,14 @@
        <img src="{{ asset('images/Logo HCMUE.png') }}" alt="Logo SPHCM" class="logo">
 
         <h2 class="mb-3" style="color:#124874;">🎉 KHÔI PHỤC THÀNH CÔNG!</h2>
-        <p class="mb-4">Tài khoản của bạn đã được khôi phục thành công. Dưới đây là thông tin đăng nhập mới:</p>
+        <p class="mb-4">Tài khoản {{ request()->get('type') }} của bạn đã được khôi phục thành công. Dưới đây là thông tin đăng nhập mới:</p>
         <div class="mb-3">
-            <strong>User:</strong> <span class="text-user">student001</span>
+            <strong>User:</strong> <span class="text-user">{{ request()->get('username') }}</span>
         </div>
         <div class="mb-4">
-            <strong>Mật khẩu:</strong> <span class="text-pass">12345678</span>
+            <strong>Mật khẩu:</strong> <span class="text-pass">{{ request()->get('password') }}</span>
         </div>
-        <a href="/" class="btn btn-home">Quay về trang chủ</a>
+        <a href="javascript:history.back()" class="btn btn-home">Quay lại</a>
     </div>
 </div>
 
