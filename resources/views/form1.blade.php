@@ -153,13 +153,12 @@
       const result = await response.json();
 
       if (result.status === "success") {
-        showAlert("✅ " + result.message, "success");
-        displayInfo(result.ocr_data, result.student);
+          showAlert("✅ " + result.message, "success");
       } else if (result.status === "warning") {
-        showAlert("⚠️ " + result.message, "warning");
-        displayInfo(result.ocr_data);
+          showAlert("⚠️ " + result.message, "warning");
+          displayInfo(result.ocr_data, null, result.image_url);
       } else {
-        showAlert("❌ " + result.message, "danger");
+          showAlert("❌ " + result.message, "danger");
       }
 
     } catch (err) {
@@ -167,26 +166,27 @@
     }
   });
 
-  //Show OCR + student results
-  function displayInfo(ocr, student = null) {
-    infoBox.style.display = 'block';
-    infoBox.innerHTML = `
-      <p><strong>Số CCCD:</strong> ${ocr?.id || 'Không xác định'}</p>
-      <p><strong>Họ và tên:</strong> ${ocr?.full_name || ''}</p>
-      <p><strong>Ngày sinh:</strong> ${ocr?.date_of_birth || ''}</p>
-      <p><strong>Giới tính:</strong> ${ocr?.sex || ''}</p>
-      <p><strong>Quốc tịch:</strong> ${ocr?.nationality || ''}</p>
-      <p><strong>Nguyên quán:</strong> ${ocr?.place_of_origin || ''}</p>
-      <p><strong>Nơi thường trú:</strong> ${ocr?.place_of_residence || ''}</p>
-      <p><strong>Ngày hết hạn:</strong> ${ocr?.date_of_expiry || ''}</p>
-      ${student ? `
-        <hr>
-        <h6 class="text-primary mt-3">🎓 Thông tin sinh viên</h6>
-        <p><strong>Tên:</strong> ${student.ho_ten || ''}</p>
-        <p><strong>Lớp:</strong> ${student.lop || ''}</p>
-        <p><strong>Email:</strong> ${student.email || ''}</p>
-      ` : ''}
-    `;
+  // Show OCR + student results
+  function displayInfo(ocr, student = null, imageUrl = null) {
+      infoBox.style.display = 'block';
+      infoBox.innerHTML = `
+          ${imageUrl ? `<p><strong>Ảnh CCCD:</strong> <a href="${imageUrl}" target="_blank">Xem ảnh</a></p>` : ''}
+          <p><strong>Số CCCD:</strong> ${ocr?.id || 'Không xác định'}</p>
+          <p><strong>Họ và tên:</strong> ${ocr?.full_name || ''}</p>
+          <p><strong>Ngày sinh:</strong> ${ocr?.date_of_birth || ''}</p>
+          <p><strong>Giới tính:</strong> ${ocr?.sex || ''}</p>
+          <p><strong>Quốc tịch:</strong> ${ocr?.nationality || ''}</p>
+          <p><strong>Nguyên quán:</strong> ${ocr?.place_of_origin || ''}</p>
+          <p><strong>Nơi thường trú:</strong> ${ocr?.place_of_residence || ''}</p>
+          <p><strong>Ngày hết hạn:</strong> ${ocr?.date_of_expiry || ''}</p>
+          ${student ? `
+              <hr>
+              <h6 class="text-primary mt-3">🎓 Thông tin sinh viên</h6>
+              <p><strong>Tên:</strong> ${student.ho_ten || ''}</p>
+              <p><strong>Lớp:</strong> ${student.lop || ''}</p>
+              <p><strong>Email:</strong> ${student.email || ''}</p>
+          ` : ''}
+      `;
   }
 
   // Helper: show alert

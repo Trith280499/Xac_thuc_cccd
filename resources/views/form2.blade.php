@@ -6,6 +6,7 @@
   <title>Xác nhận và khôi phục tài khoản sinh viên</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body {
       background-color: #f1f3f5;
@@ -112,17 +113,31 @@
       text-align: center;
       margin: 15px 0;
     }
+
+    .exit-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
   </style>
   <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
+  <!-- Nút thoát -->
+  <div class="exit-btn">
+    <button type="button" class="btn btn-outline-danger" onclick="exitPage()">
+      <i class="fas fa-sign-out-alt me-1"></i> Thoát
+    </button>
+  </div>
+
   <!-- Modal Thông báo thành công -->
   <div class="modal fade" id="successModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content modal-success">
         <div class="modal-header bg-success text-white">
-          <h5 class="modal-title">✅ Thành công</h5>
+          <h5 class="modal-title">Thành công</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body text-center">
@@ -148,7 +163,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-warning">
-          <h5 class="modal-title">⚠️ Xác nhận khôi phục</h5>
+          <h5 class="modal-title">Xác nhận khôi phục</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body text-center">
@@ -172,7 +187,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content modal-danger">
         <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title">❌ Không thể khôi phục</h5>
+          <h5 class="modal-title">Không thể khôi phục</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body text-center">
@@ -211,14 +226,37 @@
       </div>
     </div>
   </div>
+  
+  <!-- Modal Xác nhận thoát -->
+  <div class="modal fade" id="exitConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title"> Xác nhận thoát</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <div class="mb-3">
+            <i class="fas fa-sign-out-alt fa-2x text-warning"></i>
+          </div>
+          <h5 class="mb-3">Bạn có chắc muốn thoát?</h5>
+          <p class="text-muted">Mọi thông tin chưa được lưu sẽ bị mất. Bạn sẽ được chuyển về trang chủ.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ở lại</button>
+          <button type="button" class="btn btn-warning" onclick="confirmExit()">Thoát</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="container">
     <div class="card shadow-lg p-4">
       <h3 class="text-center mb-4 text-primary">XÁC NHẬN VÀ KHÔI PHỤC TÀI KHOẢN SINH VIÊN</h3>
-      
-      @if(!empty($decodedBase64))
+
+      @if(!empty($image_url))
       <div class="text-center mb-4">
-        <img src="{{ $decodedBase64 }}"
+        <img src="{{ $image_url }}"
           alt="Ảnh CCCD"
           class="img-fluid rounded shadow-sm"
           style="max-height: 280px; border: 1px solid #dee2e6;">
@@ -368,9 +406,6 @@
     </div>
   </div>
 
-  <!-- Add Font Awesome for icons -->
-  <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
-
   <script>
     let currentAccount = null;
     let redirectData = null;
@@ -406,9 +441,23 @@
     async function performReset(account) {
       const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
       loadingModal.show();
-
+      
+      let url = '';
       try {
-        const response = await fetch('/form2/reset-password', {
+        switch(account.type) {
+          case 'Teams':
+            url = 'https://ocr.hcmue.edu.vn/reset-password';
+            break;
+          case 'VLE':
+            url = 'https://ocr.hcmue.edu.vn/reset-vle';
+            break;
+          // case 'Portal':
+          //   url = 'https://ocr.hcmue.edu.vn/reset-portal';
+          //   break;
+          default:
+            throw new Error('Loại tài khoản không hợp lệ');
+        }
+        const response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -416,7 +465,6 @@
             'Accept': 'application/json'
           },
           body: JSON.stringify({
-            type: account.type,
             username: account.username
           })
         });
@@ -506,6 +554,33 @@
       
       if (redirectData) {
         window.location.href = `/form3/view?username=${redirectData.username}&password=${redirectData.password}&type=${redirectData.type}`;
+      }
+    }
+
+    // Hiển thị modal xác nhận thoát
+    function exitPage() {
+      const exitModal = new bootstrap.Modal(document.getElementById('exitConfirmModal'));
+      exitModal.show();
+    }
+
+    // Xác nhận thoát và xóa session
+    async function confirmExit() {
+      try {
+        // Gửi yêu cầu xóa session
+        const response = await fetch('/clear-session', {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+          }
+        });
+
+        // Chuyển hướng về trang chủ
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Error clearing session:', error);
+        // Nếu có lỗi, vẫn chuyển hướng về trang chủ
+        window.location.href = '/';
       }
     }
 
