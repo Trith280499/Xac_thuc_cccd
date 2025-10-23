@@ -310,56 +310,59 @@
 
         <!-- Lịch sử khôi phục -->
         <div class="form-section">
-          <h5>Lịch sử khôi phục</h5>
-          <div class="table-responsive">
-            <table class="table table-bordered align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>Loại tài khoản</th>
-                  <th>Tài khoản</th>
-                  <th>Mật khẩu</th>
-                  <th>Ngày reset</th>
-                </tr>
-              </thead>
-              <tbody>
-                {{-- EDU --}}
-                @foreach ($eduAccounts as $acc)
-                <tr>
-                  <td>Microsoft Teams</td>
-                  <td>{{ $acc->tai_khoan }}</td>
-                  <td>{{ $edu_new_password ?? $acc->mat_khau }}</td>
-                  <td>{{ $acc->ngay_reset ?? '---' }}</td>
-                </tr>
-                @endforeach
+            <h5>Lịch sử khôi phục</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Loại tài khoản</th>
+                            <th>Tài khoản</th>
+                            <th>Mật khẩu mới</th>
+                            <th>Ngày reset</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            // Lấy lịch sử reset từ database, sắp xếp theo thời gian mới nhất
+                            $lichSuReset = DB::table('lich_su_reset')
+                                ->whereIn('tai_khoan', 
+                                    array_merge(
+                                        $eduAccounts->pluck('tai_khoan')->toArray(),
+                                        $vleAccounts->pluck('tai_khoan')->toArray(),
+                                        $msteamAccounts->pluck('tai_khoan')->toArray()
+                                    )
+                                )
+                                ->orderBy('thoi_gian_reset', 'desc')
+                                ->get();
+                        @endphp
 
-                {{-- VLE --}}
-                @foreach ($vleAccounts as $acc)
-                <tr>
-                  <td>VLE</td>
-                  <td>{{ $acc->tai_khoan }}</td>
-                  <td>{{ $vle_new_password ?? $acc->mat_khau }}</td>
-                  <td>{{ $acc->ngay_reset ?? '---' }}</td>
-                </tr>
-                @endforeach
+                        @foreach ($lichSuReset as $history)
+                        <tr>
+                            <td>
+                                @if($history->loai_tai_khoan == 'Teams')
+                                    Microsoft Teams
+                                @elseif($history->loai_tai_khoan == 'VLE')
+                                    VLE
+                                @elseif($history->loai_tai_khoan == 'Portal')
+                                    Portal
+                                @else
+                                    {{ $history->loai_tai_khoan }}
+                                @endif
+                            </td>
+                            <td>{{ $history->tai_khoan }}</td>
+                            <td>{{ $history->mat_khau_moi }}</td>
+                            <td>{{ \Carbon\Carbon::parse($history->thoi_gian_reset)->format('d/m/Y H:i:s') }}</td>
+                        </tr>
+                        @endforeach
 
-                {{-- MSTeams --}}
-                @foreach ($msteamAccounts as $acc)
-                <tr>
-                  <td>Portal</td>
-                  <td>{{ $acc->tai_khoan }}</td>
-                  <td>{{ $portal_new_password ?? $acc->mat_khau }}</td>
-                  <td>{{ $acc->ngay_reset ?? '---' }}</td>
-                </tr>
-                @endforeach
-
-                @if ($eduAccounts->isEmpty() && $vleAccounts->isEmpty() && $msteamAccounts->isEmpty())
-                <tr class="text-center text-muted">
-                  <td colspan="4">Chưa có lịch sử khôi phục nào</td>
-                </tr>
-                @endif
-              </tbody>
-            </table>
-          </div>
+                        @if ($lichSuReset->isEmpty())
+                        <tr class="text-center text-muted">
+                            <td colspan="4">Chưa có lịch sử khôi phục nào</td>
+                        </tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
         </div>
       </form>
     </div>
