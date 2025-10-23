@@ -11,24 +11,44 @@ class CccdAuthController extends Controller
   public function authenticate(Request $request)
 {
     try {
-        $encoded_img = $request->input('image_base64');
+        // $encoded_img = $request->input('image_base64');
 
-        if (!$encoded_img) {
-            return response()->json(['status' => 'error', 'message' => 'Thieu du lieu anh'], 400);
+        // if (!$encoded_img) {
+        //     return response()->json(['status' => 'error', 'message' => 'Thieu du lieu anh'], 400);
+        // }
+
+        // // Decode base64
+        // if (preg_match('/^data:image\/(\w+);base64,/', $encoded_img, $type)) {
+        //     $encoded_img = substr($encoded_img, strpos($encoded_img, ',') + 1);
+        //     $type = strtolower($type[1]);
+        //     $imageData = base64_decode($encoded_img);
+        // }
+
+        // $imageUrl = $request->input('image_url');
+        // if (!$imageUrl) {
+        //     return response()->json(['status' => 'error', 'message' => 'Thiếu đường dẫn ảnh'], 400);
+        // }
+
+        // Kiểm tra xem có file được gửi lên không
+        if (!$request->hasFile('cccd')) {
+            return response()->json(['status' => 'error', 'message' => 'Không có file upload'], 400);
         }
 
-        // Decode base64
-        if (preg_match('/^data:image\/(\w+);base64,/', $encoded_img, $type)) {
-            $encoded_img = substr($encoded_img, strpos($encoded_img, ',') + 1);
-            $type = strtolower($type[1]);
-            $imageData = base64_decode($encoded_img);
-        }
+        // Lưu file vào thư mục public/storage/cccd/
+        $file = $request->file('cccd');
+        $ext = $file->getClientOriginalExtension();
+        $fileName = time() . '_' . uniqid() . '.' . $ext;
+        $path = $file->storeAs('public/cccd', $fileName);
+
+        // Lấy đường dẫn public để hiển thị
+        $imageUrl = asset('storage/cccd/' . $fileName);
+
 
         // Giả lập CCCD number - trong thực tế sẽ được trích xuất từ ảnh
         $cccdText = '001123456789';
         
         // Lưu lại ảnh đã decode để hiển thị ở form2
-        $base64Img = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
+        // $base64Img = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
 
         // Lấy thông tin từ database
         $student = DB::table('sinh_vien')->where('so_cccd', $cccdText)->first();
@@ -65,14 +85,14 @@ class CccdAuthController extends Controller
                 'eduAccounts' => $eduAccounts,
                 'vleAccounts' => $vleAccounts,
                 'msteamAccounts' => $msteamAccounts,
-                'decodedBase64' => $base64Img
+                'imageUrl' => $imageUrl
             ]
         ]);
 
         return view('form2', [
             'sv' => $student,
             'cccdData' => $cccdData,
-            'decodedBase64' => $base64Img,
+            'imageUrl' => $imageUrl,
             'eduAccounts' => $eduAccounts,
             'vleAccounts' => $vleAccounts,
             'msteamAccounts' => $msteamAccounts
@@ -134,7 +154,8 @@ public function showForm2(Request $request)
     return view('form2', [
         'sv' => $data['sv'] ?? null,
         'cccdData' => $data['cccdData'] ?? null,
-        'decodedBase64' => $data['decodedBase64'] ?? null,
+        // 'decodedBase64' => $data['decodedBase64'] ?? null,
+        'imageUrl' => $data['imageUrl'] ?? null,
         'eduAccounts' => $data['eduAccounts'] ?? collect(),
         'vleAccounts' => $data['vleAccounts'] ?? collect(),
         'msteamAccounts' => $data['msteamAccounts'] ?? collect(),

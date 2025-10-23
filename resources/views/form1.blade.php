@@ -108,9 +108,10 @@
     }
 
     try {
-        const base64Image = await toBase64(file);
+        // const base64Image = await toBase64(file);
         const formData = new FormData();
-        formData.append('image_base64', base64Image);
+        // formData.append('image_base64', base64Image);
+        formData.append('cccd', file);
 
         const response = await fetch('/cccd-auth', {
             method: 'POST',

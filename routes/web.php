@@ -6,7 +6,7 @@ use App\Http\Controllers\CccdController;
 use App\Http\Controllers\CccdAuthController;
 use Illuminate\Support\Facades\DB;
 
-
+Route::post('/upload-cccd', [CccdController::class, 'upload'])->name('cccd.upload');
 Route::post('/cccd-auth', [CccdAuthController::class, 'authenticate'])->name('cccd.auth');
 Route::get('/logout', [CccdAuthController::class, 'logout'])->name('logout');
 

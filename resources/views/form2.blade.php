@@ -216,9 +216,19 @@
     <div class="card shadow-lg p-4">
       <h3 class="text-center mb-4 text-primary">XÁC NHẬN VÀ KHÔI PHỤC TÀI KHOẢN SINH VIÊN</h3>
       
-      @if(!empty($decodedBase64))
+      <!-- @if(!empty($decodedBase64))
       <div class="text-center mb-4">
         <img src="{{ $decodedBase64 }}"
+          alt="Ảnh CCCD"
+          class="img-fluid rounded shadow-sm"
+          style="max-height: 280px; border: 1px solid #dee2e6;">
+        <p class="text-muted mt-2">Ảnh CCCD đã tải lên</p>
+      </div>
+      @endif -->
+
+      @if(!empty($imageUrl))
+      <div class="text-center mb-4">
+        <img src="{{ $imageUrl }}"
           alt="Ảnh CCCD"
           class="img-fluid rounded shadow-sm"
           style="max-height: 280px; border: 1px solid #dee2e6;">

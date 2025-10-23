@@ -161,16 +161,19 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   }
 
   try {
-    const base64Image = await toBase64(file);
+    // const base64Image = await toBase64(file);
+    const uploadForm = new FormData();
+    uploadForm.append('cccd', file);
 
     const authRes = await fetch('/cccd-auth', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        // 'Content-Type': 'application/json',
         'X-CSRF-TOKEN': token
       },
-      credentials: 'same-origin',
-      body: JSON.stringify({ image_base64: base64Image })
+      // credentials: 'same-origin',
+      // body: JSON.stringify({ image_base64: base64Image })
+      body: uploadForm
     });
 
     const data = await authRes.json();
@@ -190,14 +193,14 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 });
 
 // helper: convert file to Base64
-function toBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
-}
+// function toBase64(file) {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.readAsDataURL(file);
+//     reader.onload = () => resolve(reader.result);
+//     reader.onerror = error => reject(error);
+//   });
+// }
 
 function showAlert(message, type) {
   const alertBox = document.getElementById('alertBox');
