@@ -4,13 +4,13 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\SinhVien;
+use App\Models\User;
 
-class SinhVienSeeder extends Seeder
+class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $sinhVienData = [
+        $userData = [
             [
                 'mssv' => '20240001',
                 'so_cccd' => '001123456789',
@@ -33,8 +33,8 @@ class SinhVienSeeder extends Seeder
             ]
         ];
 
-        foreach ($sinhVienData as $data) {
-            SinhVien::create($data);
+        foreach ($userData as $data) {
+            User::create($data);
         }
     }
 }

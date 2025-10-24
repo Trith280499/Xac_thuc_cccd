@@ -12,9 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('mssv')->unique();
             $table->string('so_cccd');
-            $table->foreignId('tai_khoan_vle_id')->nullable()->constrained('tai_khoan_vle');
-            $table->foreignId('tai_khoan_edu_id')->nullable()->constrained('tai_khoan_edu');
-            $table->foreignId('tai_khoan_ms_team_id')->nullable()->constrained('tai_khoan_ms_team');
             $table->string('trang_thai')->default('active');
             $table->timestamps();
 

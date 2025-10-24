@@ -81,12 +81,20 @@ class CccdAuthController extends Controller
                 ], 200);
             }
 
-            // Optional: query related tables
             $cccdData = DB::table('can_cuoc_cong_dan')->where('so_cccd', $cccdText)->first();
             $eduAccounts = DB::table('tai_khoan_edu')->where('id', $student->tai_khoan_edu_id)->get();
             $vleAccounts = DB::table('tai_khoan_vle')->where('id', $student->tai_khoan_vle_id)->get();
             $msteamAccounts = DB::table('tai_khoan_ms_team')->where('id', $student->tai_khoan_ms_team_id)->get();
 
+            if ($cccdData){
+                DB::table('can_cuoc_cong_dan')
+                    ->where('so_cccd', $cccdText)
+                    ->update([
+                        'anh_cccd' => $imageUrl,
+                        'updated_at' => now()
+                    ]);
+            }
+            
             // Lưu thông tin vào session
             session([
                 'cccd_authenticated' => true,
@@ -136,7 +144,7 @@ class CccdAuthController extends Controller
         return view('form2', [
             'sv' => $data['sv'] ?? null,
             'cccdData' => $data['cccdData'] ?? null,
-            'image_url' => $data['image_url'] ?? null, // Truyền URL thay vì base64
+            'image_url' => $data['image_url'] ?? null,
             'eduAccounts' => $data['eduAccounts'] ?? collect(),
             'vleAccounts' => $data['vleAccounts'] ?? collect(),
             'msteamAccounts' => $data['msteamAccounts'] ?? collect(),

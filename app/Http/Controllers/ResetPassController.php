@@ -182,7 +182,7 @@ class ResetPassController extends Controller
         }
     }
 
-    // Hàm lấy lịch sử reset (nếu cần)
+    // Hàm lấy lịch sử reset
     public function getLichSuReset($username = null)
     {
         $query = DB::table(_LICH_SU_RESET)
