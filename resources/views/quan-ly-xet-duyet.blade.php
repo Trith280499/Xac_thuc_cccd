@@ -499,7 +499,7 @@
           filterApplications();
           
         } catch (error) {
-          console.error('Error loading applications:', error);
+          console.error('Error loading applications:', error); 
           applicationsList.innerHTML = `
             <div class="text-center py-4">
               <i class="fas fa-exclamation-triangle fa-2x text-danger mb-3"></i>

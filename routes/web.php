@@ -68,7 +68,6 @@ Route::prefix('quan-ly-xet-duyet')->group(function() {
     Route::post('/', [CccdVerifyController::class, 'updateApprovalStatus'])->name('update.approval.status');
 });
 
-// Xử lý gửi yêu cầu xét duyệt
 
 Route::fallback(function () {
     return redirect('/');
