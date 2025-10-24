@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CccdAuthController extends Controller
 {
@@ -25,44 +27,26 @@ class CccdAuthController extends Controller
         //     $imageData = base64_decode($encoded_img);
         // }
 
-        // $imageUrl = $request->input('image_url');
-        // if (!$imageUrl) {
-        //     return response()->json(['status' => 'error', 'message' => 'Thiếu đường dẫn ảnh'], 400);
-        // }
-
-        // Kiểm tra xem có file được gửi lên không
-        if (!$request->hasFile('cccd')) {
-            return response()->json(['status' => 'error', 'message' => 'Không có file upload'], 400);
-        }
-
-        // Lưu file vào thư mục public/storage/cccd/
-        $file = $request->file('cccd');
-        $ext = $file->getClientOriginalExtension();
-        $fileName = time() . '_' . uniqid() . '.' . $ext;
-        $path = $file->storeAs('public/cccd', $fileName);
-
-        // Lấy đường dẫn public để hiển thị
-        $imageUrl = asset('storage/cccd/' . $fileName);
-
-        // Đường dẫn tạm để gửi cho OCR API
-        $tempFile = storage_path('app/public/cccd/' . $fileName);
-
-        // Giả lập CCCD number - trong thực tế sẽ được trích xuất từ ảnh
-        $cccdText = '001123456789';
-        
-        // Lưu lại ảnh đã decode để hiển thị ở form2
-        // $base64Img = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
+            // Lưu ảnh vào storage
+            $fileName = 'cccd_' . Str::random(20) . '.' . $type;
+            $filePath = 'cccd_images/' . $fileName;
+            
+            // Lưu file vào storage (public disk)
+            Storage::disk('public')->put($filePath, $imageData);
+            
+            // Lấy URL công khai
+            $imageUrl = Storage::url($filePath);
 
             // Call OCR API
-           $ocrResponse = Http::withoutVerifying()->withHeaders([
+            $ocrResponse = Http::withoutVerifying()->withHeaders([
                 'x-api-key' => '5dd1b197-c051-42c9-8f3f-4accd12335ex',
             ])->attach(
-                'myfile', fopen($tempFile, 'r'), 'cccd_image.' . $ext
+                'myfile', $imageData, 'cccd_image.' . $type
             )->post('https://ocr.hcmue.edu.vn/extract');
 
-            // unlink($tempFile);
-
             if (!$ocrResponse->ok()) {
+                // Xóa ảnh đã lưu nếu OCR fail
+                Storage::disk('public')->delete($filePath);
                 return response()->json([
                     'status' => 'error',
                     'message' => 'OCR API lỗi: ' . $ocrResponse->status()
@@ -72,6 +56,8 @@ class CccdAuthController extends Controller
             $ocrData = $ocrResponse->json();
 
             if (empty($ocrData['id'])) {
+                // Xóa ảnh đã lưu nếu OCR không nhận dạng được
+                Storage::disk('public')->delete($filePath);
                 return response()->json([
                     'status' => 'error',
                     'message' => 'OCR không nhận dạng được CCCD'
@@ -80,16 +66,17 @@ class CccdAuthController extends Controller
 
             // Use OCR result as input
             $cccdText = $ocrData['id'];
-            // $base64Img = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
 
             // Query database
             $student = DB::table('sinh_vien')->where('so_cccd', $cccdText)->first();
 
             if (!$student) {
+                // Vẫn giữ ảnh trong trường hợp không tìm thấy sinh viên
                 return response()->json([
                     'status' => 'warning',
                     'message' => 'Không tìm thấy sinh viên trong DB',
-                    'ocr_data' => $ocrData
+                    'ocr_data' => $ocrData,
+                    'image_url' => $imageUrl
                 ], 200);
             }
 
@@ -99,22 +86,23 @@ class CccdAuthController extends Controller
             $vleAccounts = DB::table('tai_khoan_vle')->where('id', $student->tai_khoan_vle_id)->get();
             $msteamAccounts = DB::table('tai_khoan_ms_team')->where('id', $student->tai_khoan_ms_team_id)->get();
 
+            // Lưu thông tin vào session
             session([
-            'cccd_authenticated' => true,
-            'cccd_number' => $cccdText,
-            'student_data' => [
-                'sv' => $student,
-                'cccdData' => $cccdData,
-                'eduAccounts' => $eduAccounts,
-                'vleAccounts' => $vleAccounts,
-                'msteamAccounts' => $msteamAccounts,
-                'imageUrl' => $imageUrl, 
-                'ocrData' => $ocrData
-            ]
-        ]);
+                'cccd_authenticated' => true,
+                'cccd_number' => $cccdText,
+                'student_data' => [
+                    'sv' => $student,
+                    'cccdData' => $cccdData,
+                    'eduAccounts' => $eduAccounts,
+                    'vleAccounts' => $vleAccounts,
+                    'msteamAccounts' => $msteamAccounts,
+                    'image_url' => $imageUrl, 
+                    'ocrData' => $ocrData
+                ]
+            ]);
 
-        // Redirect to Form 2
-        return redirect()->route('form2.view');
+            // Redirect to Form 2
+            return redirect()->route('form2.view');
 
         // return view('form2', [
         //     'sv' => $student,
@@ -126,6 +114,10 @@ class CccdAuthController extends Controller
         // ]);
 
         } catch (\Exception $e) {
+            // Xóa ảnh đã lưu nếu có lỗi
+            if (isset($filePath)) {
+                Storage::disk('public')->delete($filePath);
+            }
             return response()->json([
                 'status' => 'error',
                 'message' => 'Lỗi xử lý: ' . $e->getMessage()
@@ -133,62 +125,44 @@ class CccdAuthController extends Controller
         }
     }
 
-
-
-// Thêm method đăng xuất
-public function logout()
-{
-    session()->forget(['cccd_authenticated', 'cccd_number', 'student_data']);
-    return redirect('/');
-}
-
-private function checkInfoInternal($cccdText, $decodedBase64)
-{
-    $student = DB::table('sinh_vien')->where('so_cccd', $cccdText)->first();
-    $cccdData = DB::table('can_cuoc_cong_dan')->where('so_cccd', $cccdText)->first();
-
-    $eduAccounts = DB::table('tai_khoan_edu')
-        ->select('tai_khoan', 'mat_khau', 'ngay_reset')
-        ->where('id', $student->tai_khoan_edu_id ?? null)
-        ->get();
-
-    $vleAccounts = DB::table('tai_khoan_vle')
-        ->select('tai_khoan', 'mat_khau', 'ngay_reset')
-        ->where('id', $student->tai_khoan_vle_id ?? null)
-        ->get();
-
-    $msteamAccounts = DB::table('tai_khoan_ms_team')
-        ->select('tai_khoan', 'mat_khau', 'ngay_reset')
-        ->where('id', $student->tai_khoan_ms_team_id ?? null)
-        ->get();
-
-    return view('form2', [
-        'sv' => $student,
-        'cccdData' => $cccdData,
-        'decodedBase64' => $decodedBase64,
-        'eduAccounts' => $eduAccounts,
-        'vleAccounts' => $vleAccounts,
-        'msteamAccounts' => $msteamAccounts
-    ]);
-}
-
-public function showForm2(Request $request)
-{
-    if (!session('cccd_authenticated')) {
+    // Thêm method đăng xuất
+    public function logout()
+    {
+        // Có thể xóa ảnh khi logout nếu cần
+        session()->forget(['cccd_authenticated', 'cccd_number', 'student_data']);
         return redirect('/');
     }
 
-    $data = session('student_data', []);
+    public function showForm2(Request $request)
+    {
+        if (!session('cccd_authenticated')) {
+            return redirect('/');
+        }
 
-    return view('form2', [
-        'sv' => $data['sv'] ?? null,
-        'cccdData' => $data['cccdData'] ?? null,
-        // 'decodedBase64' => $data['decodedBase64'] ?? null,
-        'imageUrl' => $data['imageUrl'] ?? null,
-        'eduAccounts' => $data['eduAccounts'] ?? collect(),
-        'vleAccounts' => $data['vleAccounts'] ?? collect(),
-        'msteamAccounts' => $data['msteamAccounts'] ?? collect(),
-    ]);
-}
+        $data = session('student_data', []);
 
+        return view('form2', [
+            'sv' => $data['sv'] ?? null,
+            'cccdData' => $data['cccdData'] ?? null,
+            'image_url' => $data['image_url'] ?? null, // Truyền URL thay vì base64
+            'eduAccounts' => $data['eduAccounts'] ?? collect(),
+            'vleAccounts' => $data['vleAccounts'] ?? collect(),
+            'msteamAccounts' => $data['msteamAccounts'] ?? collect(),
+        ]);
+    }
+
+    // Thêm method để xóa ảnh cũ nếu cần
+    public function cleanupOldImages()
+    {
+        // Có thể thêm logic xóa ảnh cũ sau 24h nếu cần
+        $files = Storage::disk('public')->files('cccd_images');
+        $now = now();
+        
+        foreach ($files as $file) {
+            $lastModified = Storage::disk('public')->lastModified($file);
+            if ($now->diffInHours(\Carbon\Carbon::createFromTimestamp($lastModified)) > 24) {
+                Storage::disk('public')->delete($file);
+            }
+        }
+    }
 }

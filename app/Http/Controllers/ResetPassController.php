@@ -111,7 +111,6 @@ class ResetPassController extends Controller
         DB::beginTransaction();
         
         try {
-            // Update password in database based on account type
             switch($accountType) {
                 case 'Teams':
                     DB::table(_EDU)
@@ -120,7 +119,6 @@ class ResetPassController extends Controller
                             'mat_khau' => $newPassword,
                             'ngay_reset' => now()
                         ]);
-                    session(['edu_new_password' => $newPassword]);
                     break;
                 case 'VLE': 
                     DB::table(_VLE)
@@ -129,7 +127,6 @@ class ResetPassController extends Controller
                             'mat_khau' => $newPassword,
                             'ngay_reset' => now()
                         ]);
-                    session(['vle_new_password' => $newPassword]);
                     break;
                 case 'Portal':
                     DB::table(_MSTEAM)
@@ -138,11 +135,9 @@ class ResetPassController extends Controller
                             'mat_khau' => $newPassword,
                             'ngay_reset' => now()
                         ]);
-                    session(['portal_new_password' => $newPassword]);
                     break;
             }
 
-            // Ghi lịch sử reset
             DB::table(_LICH_SU_RESET)->insert([
                 'tai_khoan' => $username,
                 'loai_tai_khoan' => $accountType,
@@ -151,6 +146,21 @@ class ResetPassController extends Controller
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
+
+            // Lưu thông tin reset mới nhất vào session
+            $recentReset = [
+                'username' => $username,
+                'type' => $accountType,
+                'new_password' => $newPassword,
+                'reset_time' => now()
+            ];
+            
+            // Lấy danh sách reset gần đây từ session hoặc tạo mới
+            $recentResets = session('recent_resets', []);
+            array_unshift($recentResets, $recentReset); // Thêm vào đầu mảng
+            // Giới hạn chỉ lưu 10 reset gần nhất
+            $recentResets = array_slice($recentResets, 0, 10);
+            session(['recent_resets' => $recentResets]);
                 
             DB::commit();
 
