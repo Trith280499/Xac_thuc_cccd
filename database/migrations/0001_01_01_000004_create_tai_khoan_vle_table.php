@@ -8,18 +8,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tai_khoan_vle', function (Blueprint $table) {
+        Schema::create('tai_khoan', function (Blueprint $table) {
             $table->id();
-            $table->string('tai_khoan')->unique();
+            $table->string('ten_tai_khoan');
+            $table->foreignId('loai_tai_khoan_id')->constrained('loai_tai_khoan');
+            $table->foreignId('sinh_vien_id')->constrained('sinh_vien');
             $table->string('mat_khau');
             $table->date('ngay_reset')->nullable();
             $table->string('trang_thai')->default('active');
             $table->timestamps();
+
+            // Đảm bảo tên tài khoản là duy nhất theo từng loại
+            $table->unique(['ten_tai_khoan', 'loai_tai_khoan_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('tai_khoan_vle');
+        Schema::dropIfExists('tai_khoan');
     }
 };

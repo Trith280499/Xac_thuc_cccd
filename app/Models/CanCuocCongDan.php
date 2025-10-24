@@ -23,7 +23,7 @@ class CanCuocCongDan extends Model
         'noi_cap',
         'dac_diem_nhan_dang',
         'ngay_het_han',
-        'anh_dai_dien',
+        'anh_cccd',
         'trang_thai'
     ];
 

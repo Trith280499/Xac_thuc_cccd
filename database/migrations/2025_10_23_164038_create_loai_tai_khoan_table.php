@@ -8,11 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tai_khoan_ms_team', function (Blueprint $table) {
+        Schema::create('loai_tai_khoan', function (Blueprint $table) {
             $table->id();
-            $table->string('tai_khoan')->unique();
-            $table->string('mat_khau');
-            $table->date('ngay_reset')->nullable();
+            $table->string('ten_loai')->unique(); // VLE, EDU, MS_TEAM
+            $table->string('mo_ta')->nullable();
             $table->string('trang_thai')->default('active');
             $table->timestamps();
         });
@@ -20,6 +19,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tai_khoan_ms_team');
+        Schema::dropIfExists('loai_tai_khoan');
     }
 };

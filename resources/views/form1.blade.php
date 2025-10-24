@@ -135,9 +135,8 @@
   uploadBtn.addEventListener('click', async () => {
     const base64Image = canvas.toDataURL('image/jpeg');
     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const blob = await (await fetch(base64Image)).blob();
     const formData = new FormData();
-    formData.append('cccd', blob, 'cccd_image.jpg');
+    formData.append('image_base64', base64Image);
 
     try {
       showAlert("Đang xử lý ảnh, vui lòng chờ...", "info");
@@ -198,50 +197,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>`;
   }
-
-  document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const file = fileInput.files[0];
-
-    if (!file) {
-        showAlert('Vui lòng chọn ảnh CCCD trước khi xác thực.', 'warning');
-        return;
-    }
-
-    try {
-        // const base64Image = await toBase64(file);
-        const formData = new FormData();
-        // formData.append('image_base64', base64Image);
-        formData.append('cccd', file);
-
-        const response = await fetch('/cccd-auth', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': token,
-                'Accept': 'text/html'
-            },
-            body: formData
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        // Chuyển hướng đến form2 sau khi xác thực thành công
-        window.location.href = '/form2/view';
-
-    } catch (err) {
-        console.error(err);
-        showAlert('Lỗi khi gửi yêu cầu: ' + err.message, 'danger');
-    }
-});
 </script>
 
 
 </body>
 </html>
-
-
-
