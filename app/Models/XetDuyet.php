@@ -13,11 +13,27 @@ class XetDuyet extends Model
     protected $table = 'xet_duyet';
 
     protected $fillable = [
+        // Dữ liệu nhập từ người dùng
         'mssv_input',
         'cccd_input',
         'trang_thai',
         'anh_cccd',
-        'ghi_chu'
+        'ghi_chu',
+
+        // ====== Thông tin CCCD tạm thời ======
+        'so_cccd',
+        'ho_ten',
+        'ngay_sinh',
+        'gioi_tinh',
+        'quoc_tich',
+        'que_quan',
+        'noi_thuong_tru',
+        'ngay_cap',
+        'noi_cap',
+        'dac_diem_nhan_dang',
+        'ngay_het_han',
+        'anh_cccd_moi',
+        'trang_thai_cccd',
     ];
 
     /**
