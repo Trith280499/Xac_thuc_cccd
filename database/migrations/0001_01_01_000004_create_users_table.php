@@ -14,10 +14,16 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('mssv')->unique();
+            $table->string('so_cccd');
             $table->string('trang_thai')->default('active');
             $table->timestamps();
 
-            // Khóa ngoại đến bảng căn cước công dân
+            // Thêm index trước khi tạo khóa ngoại
+            $table->index('so_cccd');
+        });
+
+        // Tạo khóa ngoại sau khi đã tạo bảng can_cuoc_cong_dan
+        Schema::table('users', function (Blueprint $table) {
             $table->foreign('so_cccd')->references('so_cccd')->on('can_cuoc_cong_dan');
         });
 
@@ -43,8 +49,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        
+        // Xóa khóa ngoại trước khi xóa bảng
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropForeign(['so_cccd']);
+        });
+        
+        Schema::dropIfExists('users');
     }
 };

@@ -12,8 +12,8 @@ class UserSeeder extends Seeder
     {
         $userData = [
             [
-                'mssv' => '20240001',
-                'so_cccd' => '001123456789',
+                'mssv' => '48.01.104.030',
+                'so_cccd' => '079204021537',
             ],
             [
                 'mssv' => '20240002',

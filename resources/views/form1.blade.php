@@ -71,11 +71,11 @@
   <canvas id="canvas"></canvas>
 
   <!-- Buttons -->
-  <button id="startBtn">Xác thực</button>
-  <button id="captureBtn">Chụp ảnh</button>
+  <button id="startBtn">Bắt đầu xác thực bằng Camera</button>
+  <button id="captureBtn">Chụp ảnh CCCD</button>
   <div class="button-row">
     <button id="retakeBtn">Chụp lại</button>
-    <button id="uploadBtn">Gửi</button>
+    <button id="uploadBtn">Xác thực</button>
   </div>
 
   <!-- Display extracted info -->
@@ -95,10 +95,16 @@
   const infoBox = document.getElementById('infoBox');
   let stream;
 
-  //Start camera
+  // Start camera
   startBtn.addEventListener('click', async () => {
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
       video.srcObject = stream;
       video.style.display = 'block';
       startBtn.style.display = 'none';
@@ -119,6 +125,11 @@
     captureBtn.style.display = 'none';
     retakeBtn.style.display = 'inline-block';
     uploadBtn.style.display = 'inline-block';
+    
+    // Stop camera stream to save resources
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
   });
 
   // Retake
@@ -129,64 +140,89 @@
     captureBtn.style.display = 'block';
     retakeBtn.style.display = 'none';
     uploadBtn.style.display = 'none';
+    
+    // Restart camera
+    startCamera();
   });
+
+  // Restart camera function
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      video.srcObject = stream;
+    } catch (err) {
+      showAlert("Không thể khởi động lại camera: " + err.message, "danger");
+    }
+  }
 
   // Send image to Laravel /cccd-auth
   uploadBtn.addEventListener('click', async () => {
-    const base64Image = canvas.toDataURL('image/jpeg');
+    const base64Image = canvas.toDataURL('image/jpeg', 0.8);
     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const formData = new FormData();
     formData.append('image_base64', base64Image);
 
     try {
       showAlert("Đang xử lý ảnh, vui lòng chờ...", "info");
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = "Đang xử lý...";
 
       const response = await fetch("/cccd-auth", {
-      method: "POST",
-      headers: { "X-CSRF-TOKEN": token },
-      body: formData
-    });
+        method: "POST",
+        headers: { 
+          "X-CSRF-TOKEN": token,
+          "Accept": "application/json"
+        },
+        body: formData
+      });
 
-    if (response.redirected) {
-      window.location.href = response.url;  
-    }
+      // Handle redirect (success case - tìm thấy sinh viên)
+      if (response.redirected) {
+        window.location.href = response.url;  
+        return;
+      }
+
       const result = await response.json();
 
       if (result.status === "success") {
-          showAlert("✅ " + result.message, "success");
+        showAlert("✅ " + result.message, "success");
+        // Redirect sẽ được xử lý từ server
       } else if (result.status === "warning") {
-          showAlert("⚠️ " + result.message, "warning");
-          displayInfo(result.ocr_data, null, result.image_url);
+        // Không tìm thấy sinh viên -> chuyển đến form xét duyệt
+        showAlert("⚠️ " + result.message, "warning");
+        
+        // Chuyển đến form xét duyệt sau 2 giây
+        setTimeout(() => {
+          window.location.href = "/xet-duyet?cccd=" + encodeURIComponent(result.ocr_data?.id || '') + "&image_url=" + encodeURIComponent(result.image_url || '');
+        }, 2000);
       } else {
-          showAlert("❌ " + result.message, "danger");
+        showAlert("❌ " + result.message, "danger");
       }
 
     } catch (err) {
       showAlert("❌ Lỗi khi gửi ảnh: " + err.message, "danger");
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = "Xác thực";
     }
   });
 
-  // Show OCR + student results
-  function displayInfo(ocr, student = null, imageUrl = null) {
-      infoBox.style.display = 'block';
-      infoBox.innerHTML = `
-          ${imageUrl ? `<p><strong>Ảnh CCCD:</strong> <a href="${imageUrl}" target="_blank">Xem ảnh</a></p>` : ''}
-          <p><strong>Số CCCD:</strong> ${ocr?.id || 'Không xác định'}</p>
-          <p><strong>Họ và tên:</strong> ${ocr?.full_name || ''}</p>
-          <p><strong>Ngày sinh:</strong> ${ocr?.date_of_birth || ''}</p>
-          <p><strong>Giới tính:</strong> ${ocr?.sex || ''}</p>
-          <p><strong>Quốc tịch:</strong> ${ocr?.nationality || ''}</p>
-          <p><strong>Nguyên quán:</strong> ${ocr?.place_of_origin || ''}</p>
-          <p><strong>Nơi thường trú:</strong> ${ocr?.place_of_residence || ''}</p>
-          <p><strong>Ngày hết hạn:</strong> ${ocr?.date_of_expiry || ''}</p>
-          ${student ? `
-              <hr>
-              <h6 class="text-primary mt-3">🎓 Thông tin sinh viên</h6>
-              <p><strong>Tên:</strong> ${student.ho_ten || ''}</p>
-              <p><strong>Lớp:</strong> ${student.lop || ''}</p>
-              <p><strong>Email:</strong> ${student.email || ''}</p>
-          ` : ''}
-      `;
+  // Show OCR info
+  function displayInfo(ocr, imageUrl = null) {
+    infoBox.style.display = 'block';
+    infoBox.innerHTML = `
+      ${imageUrl ? `<p><strong>Ảnh CCCD:</strong> <a href="${imageUrl}" target="_blank">Xem ảnh</a></p>` : ''}
+      <p><strong>Số CCCD:</strong> ${ocr?.id || 'Không xác định'}</p>
+      <p><strong>Họ và tên:</strong> ${ocr?.full_name || ''}</p>
+      <p><strong>Ngày sinh:</strong> ${ocr?.date_of_birth || ''}</p>
+      <p><strong>Giới tính:</strong> ${ocr?.sex || ''}</p>
+    `;
   }
 
   // Helper: show alert
@@ -199,9 +235,5 @@
   }
 </script>
 
-
 </body>
 </html>
-
-
-

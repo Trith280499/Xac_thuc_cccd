@@ -16,14 +16,14 @@ class CanCuocCongDanSeeder extends Seeder
     {
         $cccdData = [
             [
-                'so_cccd' => '001123456789',
-                'ho_ten' => 'Nguyễn Văn A',
-                'ngay_sinh' => '1990-05-15',
+                'so_cccd' => '079204021537',
+                'ho_ten' => 'NGUYỄN TRỌNG ĐỨC',
+                'ngay_sinh' => '2004-07-04',
                 'gioi_tinh' => 'Nam',
                 'quoc_tich' => 'Việt Nam',
-                'que_quan' => 'Hà Nội',
-                'noi_thuong_tru' => 'Số 123, đường Lê Lợi, quận Hoàn Kiếm, Hà Nội',
-                'ngay_cap' => '2020-01-15',
+                'que_quan' => 'Thuận Hòa, Thành phố Huế Thừa Thiên Huế',
+                'noi_thuong_tru' => '129/M21 Cxvh Bến Vân Đồn, Phường 06, Quận 4, HCM',
+                'ngay_cap' => '2029-07-04',
                 'noi_cap' => 'Cục Cảnh sát quản lý hành chính về trật tự xã hội - Hà Nội',
                 'dac_diem_nhan_dang' => 'Nốt ruồi nhỏ bên má trái',
                 'ngay_het_han' => '2030-01-15',

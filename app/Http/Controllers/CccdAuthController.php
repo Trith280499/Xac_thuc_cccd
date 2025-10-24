@@ -282,6 +282,33 @@ class CccdAuthController extends Controller
         }
     }
 
+    public function submitApproval(Request $request)
+    {
+        try {
+            $mssv = $request->input('mssv');
+            $cccd = $request->input('cccd');
+
+            // Tạo bản ghi xét duyệt
+            XetDuyet::create([
+                'mssv_input' => $mssv,
+                'cccd_input' => $cccd,
+                'trang_thai' => 'pending',
+                'ghi_chu' => 'Chờ xét duyệt thông tin MSSV và CCCD'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã gửi yêu cầu xét duyệt thành công. Vui lòng chờ xét duyệt từ quản trị viên.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi gửi yêu cầu: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     // Thêm method để xóa ảnh cũ nếu cần
     public function cleanupOldImages()
     {

@@ -17,8 +17,8 @@ class CccdController extends Controller
         }
 
         $file = $request->file('cccd');
-        $path = $file->store('uploads/cccd', 'public'); // store in storage/app/public/uploads/cccd
-        $url = Storage::url($path); // e.g. /storage/uploads/cccd/abc.jpg
+        $path = $file->store('uploads/cccd', 'public'); 
+        $url = Storage::url($path); 
 
         return response()->json([
             'status' => 'success',
