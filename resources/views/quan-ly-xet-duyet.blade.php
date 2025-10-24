@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
+    /* Giữ nguyên CSS như trước */
     :root {
       --primary-color: #124874;
       --accent-color: #CF373D;
@@ -492,10 +493,16 @@
             </div>
           `;
           
+          // Gọi API GET để lấy danh sách yêu cầu xét duyệt
           const response = await fetch('/quan-ly-xet-duyet');
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
           const data = await response.json();
           
-          currentApplications = data.applications || [];
+          currentApplications = data.applications || data || [];
           filterApplications();
           
         } catch (error) {
@@ -518,8 +525,8 @@
         filteredApplications = currentApplications.filter(app => {
           const matchesFilter = currentFilter === 'all' || app.trang_thai === currentFilter;
           const matchesSearch = !searchTerm || 
-            app.mssv_input.toLowerCase().includes(searchTerm) || 
-            app.cccd_input.toLowerCase().includes(searchTerm) ||
+            (app.mssv_input && app.mssv_input.toLowerCase().includes(searchTerm)) || 
+            (app.cccd_input && app.cccd_input.toLowerCase().includes(searchTerm)) ||
             (app.ho_ten && app.ho_ten.toLowerCase().includes(searchTerm));
           
           return matchesFilter && matchesSearch;
@@ -551,24 +558,25 @@
           switch(app.trang_thai) {
             case 'pending': statusText = 'Chờ duyệt'; break;
             case 'approved': statusText = 'Đã duyệt'; break;
-            case 'rejected': statusText = 'Đã từ chối'; break;
+            case 'rejected': statusText = 'Từ chối'; break;
+            default: statusText = 'Chờ duyệt';
           }
           
-          const displayName = app.ho_ten || 'Chưa có thông tin';
+          // Xử lý hiển thị tên - sử dụng họ tên nếu có, nếu không dùng MSSV
+          const displayName = app.ho_ten || `Sinh viên ${app.mssv_input}`;
           const firstLetter = displayName.charAt(0).toUpperCase();
-          const submitTime = new Date(app.created_at).toLocaleString('vi-VN');
+          const submitTime = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : 'Chưa có thông tin';
           
           applicationsHTML += `
             <div class="application-item">
-              <div class="user-avatar me-3">${firstLetter}</div>
               <div class="application-info">
-                <div class="d-flex flex-wrap align-items-center mb-1">
+                <div class="d-flex flex-wrap align-items-center justify-content-between mb-1">
                   <h6 class="fw-bold mb-0 me-2">${displayName}</h6>
                   <span class="status-badge ${statusClass}">${statusText}</span>
                 </div>
                 <div class="d-flex flex-wrap text-muted">
-                  <span class="me-3"><small>MSSV: ${app.mssv_input}</small></span>
-                  <span class="me-3"><small>CCCD: ${app.cccd_input}</small></span>
+                  <span class="me-3"><small>MSSV: ${app.mssv_input || 'Chưa có'}</small></span>
+                  <span class="me-3"><small>CCCD: ${app.cccd_input || 'Chưa có'}</small></span>
                   <span><small>${submitTime}</small></span>
                 </div>
               </div>
@@ -601,12 +609,12 @@
         const app = currentApplications.find(a => a.id == appId);
         if (!app) return;
         
-        document.getElementById('detailCccd').textContent = app.cccd_input;
-        document.getElementById('detailName').textContent = app.ho_ten || 'Chưa có thông tin';
+        document.getElementById('detailCccd').textContent = app.cccd_input || 'Chưa có thông tin';
+        document.getElementById('detailName').textContent = app.ho_ten || `Sinh viên ${app.mssv_input}`;
         document.getElementById('detailDob').textContent = app.ngay_sinh || 'Chưa có thông tin';
-        document.getElementById('detailMssv').textContent = app.mssv_input;
+        document.getElementById('detailMssv').textContent = app.mssv_input || 'Chưa có thông tin';
         document.getElementById('detailFrontImage').src = app.anh_cccd || '/storage/cccd_images/default.jpg';
-        document.getElementById('detailSubmitTime').textContent = new Date(app.created_at).toLocaleString('vi-VN');
+        document.getElementById('detailSubmitTime').textContent = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : 'Chưa có thông tin';
         document.getElementById('rejectReason').value = app.ghi_chu || '';
         
         // Update status badge
@@ -616,6 +624,7 @@
           case 'pending': statusBadge.textContent = 'Đang chờ'; break;
           case 'approved': statusBadge.textContent = 'Đã duyệt'; break;
           case 'rejected': statusBadge.textContent = 'Đã từ chối'; break;
+          default: statusBadge.textContent = 'Đang chờ';
         }
         
         // Set current app id for action buttons
@@ -641,7 +650,7 @@
         try {
           const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
           
-          const response = await fetch('/', {
+          const response = await fetch('/quan-ly-xet-duyet', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -655,13 +664,18 @@
             })
           });
           
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
           const result = await response.json();
           
           if (result.success) {
             // Reload applications to get updated data
             loadApplications();
+            alert('Cập nhật trạng thái thành công!');
           } else {
-            alert('Có lỗi xảy ra: ' + result.message);
+            alert('Có lỗi xảy ra: ' + (result.message || 'Không xác định'));
           }
         } catch (error) {
           console.error('Error updating application status:', error);
