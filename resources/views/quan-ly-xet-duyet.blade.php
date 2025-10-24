@@ -190,6 +190,14 @@
       flex-shrink: 0;
       margin-left: 15px;
     }
+
+    @media (max-width: 992px) {
+      .image-preview {
+        max-width: 100%;
+        height: auto;
+      }
+      
+    }
     
     /* Responsive adjustments */
     @media (max-width: 768px) {
@@ -223,6 +231,19 @@
       
       .filter-buttons .btn-group {
         flex-wrap: nowrap;
+      }
+
+      .info-item {
+        flex-direction: column;
+      }
+      
+      .info-label {
+        min-width: auto;
+        margin-bottom: 4px;
+      }
+      
+      .info-value {
+        text-align: left;
       }
     }
     
@@ -259,7 +280,7 @@
         <img src="{{ asset('images/Logo HCMUE.png') }}" alt="Logo HCMUE" height="40" class="me-2">
         <span class="fw-bold">HCMUE - QUẢN LÝ XÉT DUYỆT</span>
       </a>
-      <div class="navbar-nav ms-auto">
+      <!-- <div class="navbar-nav ms-auto">
         <div class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
             <div class="user-avatar me-2">AD</div>
@@ -272,17 +293,14 @@
             <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
           </ul>
         </div>
-      </div>
+      </div> -->
     </div>
   </nav>
 
   <div class="container py-4">
     <!-- Header -->
     <div class="row mb-4">
-      <div class="col-md-8">
-        <h2 class="fw-bold text-primary">Quản lý xét duyệt sinh viên</h2>
-        <p class="text-muted">Xem và xét duyệt thông tin sinh viên từ CCCD</p>
-      </div>
+      <div class="col-md-8"></div>
       <div class="col-md-4">
         <div class="search-box">
           <i class="fas fa-search"></i>
@@ -329,7 +347,6 @@
       </div>
       <div class="ms-auto mt-2 mt-md-0">
         <button class="btn btn-light me-2" id="refreshBtn"><i class="fas fa-sync-alt me-1"></i> Làm mới</button>
-        <button class="btn btn-light"><i class="fas fa-download me-1"></i> Xuất file</button>
       </div>
     </div>
     
@@ -361,48 +378,92 @@
   <!-- Detail Modal -->
   <div class="modal fade detail-modal" id="detailModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-      <div class="modal-content">
+      <div class="modal-content p-3">
         <div class="modal-header">
           <h5 class="modal-title">Chi tiết yêu cầu xét duyệt</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="info-card">
-                <h6><i class="fas fa-id-card me-2 text-primary"></i>Thông tin từ CCCD</h6>
-                <p class="mb-1"><strong>Số CCCD:</strong> <span id="detailCccd">012345678901</span></p>
-                <p class="mb-1"><strong>Họ và tên:</strong> <span id="detailName">Nguyễn Văn A</span></p>
-                <p class="mb-0"><strong>Ngày sinh:</strong> <span id="detailDob">01/01/2000</span></p>
-              </div>
+        <div class="modal-body row gap-2 justify-content-center ">
+          <!-- Thông tin chung -->
+          <div class="col-md-4 info-card">
+            <h6><i class="fas fa-info-circle me-2"></i>Thông tin chung</h6>
+            <div class="info-item">
+              <span class="info-label">MSSV:</span>
+              <span class="info-value" id="detailMssv">-</span>
             </div>
-            <div class="col-md-6">
-              <div class="info-card">
-                <h6><i class="fas fa-user-graduate me-2 text-primary"></i>Thông tin sinh viên</h6>
-                <p class="mb-1"><strong>MSSV:</strong> <span id="detailMssv">72100001</span></p>
-              </div>
+            <div class="info-item">
+              <span class="info-label">Số CCCD:</span>
+              <span class="info-value" id="detailCccd">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Trạng thái:</span>
+              <span class="info-value"><span class="status-badge status-pending" id="detailStatusBadge">Đang chờ</span></span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Thời gian gửi:</span>
+              <span class="info-value" id="detailSubmitTime">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Thời gian cập nhật:</span>
+              <span class="info-value" id="detailUpdateTime">-</span>
+            </div>
+          </div>
+
+          <!-- Thông tin từ CCCD -->
+          <div class="col-md-7 info-card">
+            <h6><i class="fas fa-id-card me-2"></i>Thông tin từ CCCD</h6>
+            <div class="info-item">
+              <span class="info-label">Họ và tên:</span>
+              <span class="info-value" id="detailName">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Ngày sinh:</span>
+              <span class="info-value" id="detailDob">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Giới tính:</span>
+              <span class="info-value" id="detailGender">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Quê quán:</span>
+              <span class="info-value" id="detailHometown">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Địa chỉ thường trú:</span>
+              <span class="info-value" id="detailAddress">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Ngày cấp:</span>
+              <span class="info-value" id="detailIssueDate">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Nơi cấp:</span>
+              <span class="info-value" id="detailIssuePlace">-</span>
             </div>
           </div>
           
+          <!-- Hình ảnh CCCD -->
           <div class="info-card">
-            <h6><i class="fas fa-images me-2 text-primary"></i>Hình ảnh CCCD</h6>
+            <h6><i class="fas fa-images me-2"></i>Hình ảnh CCCD</h6>
             <div class="row">
               <div class="col-md-12 text-center">
-                <p class="mb-1">Ảnh xác thực</p>
-                <img id="detailFrontImage" src="" class="img-thumbnail" style="max-height: 300px; width: auto;">
+                <p class="mb-2">Ảnh CCCD đã tải lên</p>
+                <img id="detailFrontImage" class="image-preview" style="max-height: 300px; width: auto;">
               </div>
             </div>
           </div>
           
+          <!-- Lịch sử và ghi chú -->
           <div class="info-card">
-            <h6><i class="fas fa-history me-2 text-primary"></i>Lịch sử xét duyệt</h6>
-            <div class="mb-2">
-              <span class="status-badge status-pending me-2" id="detailStatusBadge">Đang chờ</span>
-              <small class="text-muted">Gửi lúc: <span id="detailSubmitTime">10:30 15/04/2025</span></small>
+            <h6><i class="fas fa-history me-2"></i>Lịch sử xét duyệt</h6>
+            <div class="info-item">
+              <span class="info-label">Ghi chú hiện tại:</span>
+              <span class="info-value" id="detailCurrentNote">-</span>
             </div>
-            <div class="mb-0">
+            <div class="mt-3">
               <label for="rejectReason" class="form-label">Ghi chú/Lý do (nếu từ chối)</label>
-              <textarea class="form-control" id="rejectReason" rows="3" placeholder="Nhập lý do từ chối (nếu có)"></textarea>
+              <textarea class="form-control" id="rejectReason" rows="3" placeholder="Nhập lý do từ chối hoặc ghi chú xét duyệt..."></textarea>
+              <div class="form-text">Ghi chú này sẽ được lưu lại trong lịch sử xét duyệt</div>
             </div>
           </div>
         </div>
@@ -563,7 +624,7 @@
           }
           
           // Xử lý hiển thị tên - sử dụng họ tên nếu có, nếu không dùng MSSV
-          const displayName = app.ho_ten || `Sinh viên ${app.mssv_input}`;
+          const displayName = app.ho_ten || `${app.mssv_input}`;
           const firstLetter = displayName.charAt(0).toUpperCase();
           const submitTime = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : 'Chưa có thông tin';
           
