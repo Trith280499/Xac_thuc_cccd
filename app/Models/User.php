@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
+    protected $table = 'users';
 
     /**
      * The attributes that are mass assignable.
@@ -18,9 +20,9 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'mssv',
+        'so_cccd',
+        'trang_thai',
     ];
 
     /**
@@ -44,5 +46,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Relationship với CanCuocCongDan
+     */
+    public function canCuocCongDan(): BelongsTo
+    {
+        return $this->belongsTo(CanCuocCongDan::class, 'so_cccd', 'so_cccd');
+    }
+
+    /**
+     * Relationship với SinhVien
+     */
+    public function sinhVien(): BelongsTo
+    {
+        return $this->belongsTo(SinhVien::class, 'mssv', 'mssv');
     }
 }

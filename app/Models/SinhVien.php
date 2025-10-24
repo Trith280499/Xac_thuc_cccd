@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SinhVien extends Model
 {
@@ -15,29 +16,38 @@ class SinhVien extends Model
     protected $fillable = [
         'mssv',
         'so_cccd',
-        'tai_khoan_vle_id',
-        'tai_khoan_edu_id',
-        'tai_khoan_ms_team_id',
         'trang_thai'
     ];
 
+    /**
+     * Relationship với CanCuocCongDan
+     */
     public function canCuocCongDan(): BelongsTo
     {
         return $this->belongsTo(CanCuocCongDan::class, 'so_cccd', 'so_cccd');
     }
 
-    public function taiKhoanVLE(): BelongsTo
+    /**
+     * Relationship với User
+     */
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(TaiKhoanVLE::class, 'tai_khoan_vle_id');
+        return $this->belongsTo(User::class, 'mssv', 'mssv');
     }
 
-    public function taiKhoanEdu(): BelongsTo
+    /**
+     * Relationship với TaiKhoan
+     */
+    public function taiKhoans(): HasMany
     {
-        return $this->belongsTo(TaiKhoanEdu::class, 'tai_khoan_edu_id');
+        return $this->hasMany(TaiKhoan::class, 'sinh_vien_id');
     }
 
-    public function taiKhoanMSTeam(): BelongsTo
+    /**
+     * Relationship với XetDuyet
+     */
+    public function xetDuyets(): HasMany
     {
-        return $this->belongsTo(TaiKhoanMSTeam::class, 'tai_khoan_ms_team_id');
+        return $this->hasMany(XetDuyet::class, 'mssv_input', 'mssv');
     }
 }
