@@ -4,11 +4,16 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\CccdController;
 use App\Http\Controllers\CccdAuthController;
+use App\Http\Controllers\VerifyAccountController;
 use Illuminate\Support\Facades\DB;
 
 Route::post('/upload-cccd', [CccdController::class, 'upload'])->name('cccd.upload');
 Route::post('/cccd-auth', [CccdAuthController::class, 'authenticate'])->name('cccd.auth');
 Route::get('/logout', [CccdAuthController::class, 'logout'])->name('logout');
+
+Route::get('/verify-account', [VerifyAccountController::class, 'showForm']);
+Route::post('/verify-account', [VerifyAccountController::class, 'verify']);
+Route::get('/not-student', [VerifyAccountController::class, 'notStudent']);
 
 Route::get('/', function () {
     return view('form1');
