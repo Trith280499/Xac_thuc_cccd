@@ -10,22 +10,23 @@ use Illuminate\Support\Str;
 
 class CccdAuthController extends Controller
 {
-    //giả lập function xác thực cccd, trả về cccd từ hình ảnh
-  public function authenticate(Request $request)
-{
-    try {
-        // $encoded_img = $request->input('image_base64');
+    public function authenticate(Request $request)
+    {
+        try {
+            $encoded_img = $request->input('image_base64');
 
-        // if (!$encoded_img) {
-        //     return response()->json(['status' => 'error', 'message' => 'Thieu du lieu anh'], 400);
-        // }
+            if (!$encoded_img) {
+                return response()->json(['status' => 'error', 'message' => 'Thiếu dữ liệu ảnh'], 400);
+            }
 
-        // // Decode base64
-        // if (preg_match('/^data:image\/(\w+);base64,/', $encoded_img, $type)) {
-        //     $encoded_img = substr($encoded_img, strpos($encoded_img, ',') + 1);
-        //     $type = strtolower($type[1]);
-        //     $imageData = base64_decode($encoded_img);
-        // }
+            // Decode base64 -> binary
+            if (preg_match('/^data:image\/(\w+);base64,/', $encoded_img, $type)) {
+                $encoded_img = substr($encoded_img, strpos($encoded_img, ',') + 1);
+                $type = strtolower($type[1]);
+                $imageData = base64_decode($encoded_img);
+            } else {
+                return response()->json(['status' => 'error', 'message' => 'Ảnh không hợp lệ'], 400);
+            }
 
             // Lưu ảnh vào storage
             $fileName = 'cccd_' . Str::random(20) . '.' . $type;
@@ -103,15 +104,6 @@ class CccdAuthController extends Controller
 
             // Redirect to Form 2
             return redirect()->route('form2.view');
-
-        // return view('form2', [
-        //     'sv' => $student,
-        //     'cccdData' => $cccdData,
-        //     'imageUrl' => $imageUrl,
-        //     'eduAccounts' => $eduAccounts,
-        //     'vleAccounts' => $vleAccounts,
-        //     'msteamAccounts' => $msteamAccounts
-        // ]);
 
         } catch (\Exception $e) {
             // Xóa ảnh đã lưu nếu có lỗi
