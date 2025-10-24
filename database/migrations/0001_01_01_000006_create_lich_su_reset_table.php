@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('lich_su_reset', function (Blueprint $table) {
             $table->id();
+            $table->string('so_cccd');
             $table->string('tai_khoan');
             $table->string('loai_tai_khoan'); // Teams, VLE, Portal
             $table->string('mat_khau_moi');
@@ -18,6 +19,12 @@ return new class extends Migration
             
             $table->index('tai_khoan');
             $table->index('loai_tai_khoan');
+            
+        });
+
+        // Tạo khóa ngoại sau khi đã tạo bảng can_cuoc_cong_dan
+        Schema::table('lich_su_reset', function (Blueprint $table) {
+            $table->foreign('so_cccd')->references('so_cccd')->on('can_cuoc_cong_dan');
         });
     }
 

@@ -199,7 +199,7 @@
         
         // Chuyển đến form xét duyệt sau 2 giây
         setTimeout(() => {
-          window.location.href = "/xet-duyet?cccd=" + encodeURIComponent(result.ocr_data?.id || '') + "&image_url=" + encodeURIComponent(result.image_url || '');
+          window.location.href = "/xet-duyet/view?cccd=" + encodeURIComponent(result.ocr_data?.id || '') + "&image_url=" + encodeURIComponent(result.image_url || '');
         }, 2000);
       } else {
         showAlert("❌ " + result.message, "danger");

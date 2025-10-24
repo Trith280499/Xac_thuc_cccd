@@ -80,13 +80,6 @@ class CccdAuthController extends Controller
                 ->first();
 
             if (!$student) {
-                // Tạo bản ghi xét duyệt nếu không tìm thấy sinh viên
-                XetDuyet::create([
-                    'mssv_input' => 'unknown', // hoặc có thể lấy từ OCR nếu có
-                    'cccd_input' => $cccdText,
-                    'trang_thai' => 'pending',
-                    'ghi_chu' => 'Không tìm thấy sinh viên trong hệ thống'
-                ]);
 
                 return response()->json([
                     'status' => 'warning',
@@ -159,6 +152,13 @@ class CccdAuthController extends Controller
         }
 
         $data = session('student_data', []);
+        $cccdNumber = session('cccd_number');
+
+        // Lấy lịch sử reset theo số CCCD
+        $lichSuReset = DB::table('lich_su_reset')
+            ->where('so_cccd', $cccdNumber)
+            ->orderBy('thoi_gian_reset', 'desc')
+            ->get();
 
         return view('form2', [
             'sv' => $data['sv'] ?? null,
@@ -168,6 +168,7 @@ class CccdAuthController extends Controller
             'eduAccounts' => $data['eduAccounts'] ?? collect(),
             'vleAccounts' => $data['vleAccounts'] ?? collect(),
             'msteamAccounts' => $data['msteamAccounts'] ?? collect(),
+            'lichSuReset' => $lichSuReset
         ]);
     }
 
@@ -278,33 +279,6 @@ class CccdAuthController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Lỗi xác thực thủ công: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function submitApproval(Request $request)
-    {
-        try {
-            $mssv = $request->input('mssv');
-            $cccd = $request->input('cccd');
-
-            // Tạo bản ghi xét duyệt
-            XetDuyet::create([
-                'mssv_input' => $mssv,
-                'cccd_input' => $cccd,
-                'trang_thai' => 'pending',
-                'ghi_chu' => 'Chờ xét duyệt thông tin MSSV và CCCD'
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã gửi yêu cầu xét duyệt thành công. Vui lòng chờ xét duyệt từ quản trị viên.'
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi khi gửi yêu cầu: ' . $e->getMessage()
             ], 500);
         }
     }

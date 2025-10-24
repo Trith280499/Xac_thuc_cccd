@@ -16,6 +16,7 @@ class XetDuyet extends Model
         'mssv_input',
         'cccd_input',
         'trang_thai',
+        'anh_cccd',
         'ghi_chu'
     ];
 

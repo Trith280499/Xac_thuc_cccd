@@ -40,10 +40,10 @@ class ResetPassController extends Controller
     /**
      * Kiểm tra xem tài khoản có thể reset hay không (sau 3 ngày)
      */
-    private function canResetAccount($taiKhoanId)
+    public function canResetAccount($username, $type)
     {
-        // Lấy tài khoản và thông tin loại tài khoản
-        $taiKhoan = TaiKhoan::with('loaiTaiKhoan')->find($taiKhoanId);
+        // Tìm tài khoản dựa trên username và type
+        $taiKhoan = TaiKhoan::where('ten_tai_khoan', $username)->first();
         
         if (!$taiKhoan) {
             return [
@@ -53,7 +53,8 @@ class ResetPassController extends Controller
         }
 
         // Lấy lần reset gần nhất từ bảng lịch sử
-        $lastReset = LichSuReset::where('tai_khoan_id', $taiKhoanId)
+        $lastReset = LichSuReset::where('tai_khoan', $username)
+            ->where('loai_tai_khoan', $type)
             ->orderBy('thoi_gian_reset', 'desc')
             ->first();
 
@@ -91,12 +92,53 @@ class ResetPassController extends Controller
         ];
     }
 
+    /**
+     * API kiểm tra trạng thái reset của tài khoản
+     */
+    public function checkResetStatus(Request $request)
+    {
+        $username = $request->input('username');
+        $type = $request->input('type');
+
+        if (!$username || !$type) {
+            return response()->json([
+                'can_reset' => false,
+                'message' => 'Thiếu thông tin username hoặc type'
+            ], 400);
+        }
+
+        $checkResult = $this->canResetAccount($username, $type);
+
+        return response()->json($checkResult);
+    }
+
+    /**
+     * Xử lý reset mật khẩu
+     */
     public function handleReset(Request $request)
     {
-        $taiKhoanId = $request->input('tai_khoan_id');
+        $username = $request->input('username');
+        $type = $request->input('type');
+
+        if (!$username || !$type) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Thiếu thông tin username hoặc type'
+            ], 400);
+        }
+
+        // Lấy số CCCD từ session
+        $cccdNumber = session('cccd_number');
         
+        if (!$cccdNumber) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chưa xác thực CCCD'
+            ], 401);
+        }
+
         // Kiểm tra điều kiện reset
-        $checkResult = $this->canResetAccount($taiKhoanId);
+        $checkResult = $this->canResetAccount($username, $type);
         
         if (!$checkResult['can_reset']) {
             return response()->json([
@@ -122,35 +164,20 @@ class ResetPassController extends Controller
 
             // Ghi lịch sử reset
             LichSuReset::create([
-                'tai_khoan_id' => $taiKhoanId,
+                'so_cccd' => $cccdNumber,
+                'tai_khoan' => $username,
+                'loai_tai_khoan' => $type,
                 'mat_khau_moi' => $newPassword,
                 'thoi_gian_reset' => now()
             ]);
 
-            // Lưu thông tin reset mới nhất vào session
-            $recentReset = [
-                'tai_khoan_id' => $taiKhoanId,
-                'username' => $taiKhoan->ten_tai_khoan,
-                'type' => $taiKhoan->loaiTaiKhoan->ten_loai,
-                'new_password' => $newPassword,
-                'reset_time' => now()
-            ];
-            
-            // Lấy danh sách reset gần đây từ session hoặc tạo mới
-            $recentResets = session('recent_resets', []);
-            array_unshift($recentResets, $recentReset); // Thêm vào đầu mảng
-            // Giới hạn chỉ lưu 10 reset gần nhất
-            $recentResets = array_slice($recentResets, 0, 10);
-            session(['recent_resets' => $recentResets]);
-                
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'tai_khoan_id' => $taiKhoanId,
-                'username' => $taiKhoan->ten_tai_khoan,
+                'username' => $username,
                 'password' => $newPassword,
-                'type' => $taiKhoan->loaiTaiKhoan->ten_loai,
+                'type' => $type,
                 'message' => 'Reset mật khẩu thành công!'
             ]);
 
@@ -165,11 +192,36 @@ class ResetPassController extends Controller
     }
 
     /**
+     * Lấy lịch sử reset theo CCCD (API)
+     */
+    public function getResetHistory(Request $request)
+    {
+        $cccdNumber = session('cccd_number');
+        
+        if (!$cccdNumber) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chưa xác thực CCCD'
+            ], 401);
+        }
+
+        $history = LichSuReset::where('so_cccd', $cccdNumber)
+            ->orderBy('thoi_gian_reset', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'history' => $history
+        ]);
+    }
+
+    /**
      * Reset nhiều tài khoản cùng lúc
      */
     public function handleBulkReset(Request $request)
     {
-        $taiKhoanIds = $request->input('tai_khoan_ids', []);
+        $taiKhoanIds = $request->input('username', []);
+        $type = $request->input('type');
         
         if (empty($taiKhoanIds)) {
             return response()->json([
@@ -183,7 +235,7 @@ class ResetPassController extends Controller
         $errorCount = 0;
 
         foreach ($taiKhoanIds as $taiKhoanId) {
-            $checkResult = $this->canResetAccount($taiKhoanId);
+            $checkResult = $this->canResetAccount($taiKhoanId, $type);
             
             if (!$checkResult['can_reset']) {
                 $results[] = [
@@ -262,18 +314,6 @@ class ResetPassController extends Controller
     }
 
     /**
-     * API kiểm tra trạng thái reset của tài khoản
-     */
-    public function checkResetStatus(Request $request)
-    {
-        $taiKhoanId = $request->input('tai_khoan_id');
-
-        $checkResult = $this->canResetAccount($taiKhoanId);
-
-        return response()->json($checkResult);
-    }
-
-    /**
      * Lấy danh sách tài khoản của sinh viên đã xác thực
      */
     public function getStudentAccounts(Request $request)
@@ -292,7 +332,7 @@ class ResetPassController extends Controller
             ->where('sinh_vien_id', $sinhVien->id)
             ->get()
             ->map(function ($taiKhoan) {
-                $checkResult = $this->canResetAccount($taiKhoan->id);
+                $checkResult = $this->canResetAccount($taiKhoan->id, $taiKhoan->loaiTaiKhoan->ten_loai);
                 
                 return [
                     'id' => $taiKhoan->id,

@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('mssv_input');
             $table->string('cccd_input');
             $table->string('trang_thai')->default('pending'); // pending, approved, rejected
+            $table->string('anh_cccd');
             $table->text('ghi_chu')->nullable();
             $table->timestamps();
 

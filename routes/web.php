@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\CccdAuthController;
+use App\Http\Controllers\CccdVerifyController;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
@@ -19,6 +20,7 @@ Route::prefix('form2')->group(function() {
     Route::get('/student-accounts', [ResetPassController::class, 'getStudentAccounts'])->name('student.accounts');
     Route::post('/check-reset-status', [ResetPassController::class, 'checkResetStatus'])->name('check.reset.status');
     Route::post('/reset-password', [ResetPassController::class, 'handleReset'])->name('reset.password');
+    Route::get('/reset-history', [ResetPassController::class, 'getResetHistory']);
     Route::post('/bulk-reset-password', [ResetPassController::class, 'handleBulkReset'])->name('bulk.reset.password');
 });
 
@@ -46,15 +48,27 @@ Route::prefix('api')->group(function() {
 Route::get('/cleanup-images', [CccdAuthController::class, 'cleanupOldImages'])->name('cleanup.images');
 
 // Form xét duyệt
-Route::get('/xet-duyet', function (Request $request) {
-    return view('xet-duyet', [
-        'cccd' => $request->get('cccd'),
-        'image_url' => $request->get('image_url')
-    ]);
-})->name('xet-duyet.form');
+Route::prefix('xet-duyet')->group(function() {
+    Route::get('/view', function (Request $request) {
+        return view('xet-duyet', [
+            'cccd' => $request->get('cccd'),
+            'image_url' => $request->get('image_url')
+        ]);
+    })->name('xet-duyet.form');
+    Route::post('/check-cccd-status', [CccdVerifyController::class, 'checkCccdStatus']);
+    Route::post('/submit-approval', [CccdVerifyController::class, 'submitApproval'])->name('submit.approval');
+});
+
+//Form quản lý xét duyệt
+Route::prefix('quan-ly-xet-duyet')->group(function() {
+    Route::get('/view', function () {
+        return view('quan-ly-xet-duyet');
+    })->name('quan-ly-xet-duyet.form');
+    Route::get('/', [CccdVerifyController::class, 'getAllApprovals']);
+    Route::post('/', [CccdVerifyController::class, 'updateApprovalStatus'])->name('update.approval.status');
+});
 
 // Xử lý gửi yêu cầu xét duyệt
-Route::post('/submit-approval', [CccdAuthController::class, 'submitApproval'])->name('submit.approval');
 
 Route::fallback(function () {
     return redirect('/');

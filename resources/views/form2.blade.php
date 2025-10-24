@@ -301,12 +301,12 @@
                   <td><img src="{{ asset('images/teams.png') }}" alt="Teams" width="16" class="me-2"> Microsoft Teams</td>
                   <td>
                     <input type="text" class="form-control"
-                      value="{{ $eduAccounts->first()->tai_khoan ?? '' }}" readonly disabled>
+                      value="{{ $eduAccounts->first()->ten_tai_khoan ?? '' }}" readonly disabled>
                     <div class="reset-info" id="teams-info"></div>
                   </td>
                   <td class="text-center">
                     <span class="status-text text-primary" 
-                           data-username="{{ $eduAccounts->first()->tai_khoan ?? '' }}" 
+                           data-username="{{ $eduAccounts->first()->ten_tai_khoan ?? '' }}" 
                            data-type="Teams"
                            onclick="showConfirmModal(this)">🔄</span>
                   </td>
@@ -316,12 +316,12 @@
                   <td>📝 VLE (học trực tuyến)</td>
                   <td>
                     <input type="text" class="form-control"
-                      value="{{ $vleAccounts->first()->tai_khoan ?? '' }}" readonly disabled>
+                      value="{{ $vleAccounts->first()->ten_tai_khoan ?? '' }}" readonly disabled>
                     <div class="reset-info" id="vle-info"></div>
                   </td>
                   <td class="text-center">
                     <span class="status-text text-primary" 
-                           data-username="{{ $vleAccounts->first()->tai_khoan ?? '' }}" 
+                           data-username="{{ $vleAccounts->first()->ten_tai_khoan ?? '' }}" 
                            data-type="VLE"
                            onclick="showConfirmModal(this)">🔄</span>
                   </td>
@@ -331,12 +331,12 @@
                   <td>👨‍🎓 Portal (MSSV)</td>
                   <td>
                     <input type="text" class="form-control"
-                      value="{{ $msteamAccounts->first()->tai_khoan ?? '' }}" readonly disabled>
+                      value="{{ $msteamAccounts->first()->ten_tai_khoan ?? '' }}" readonly disabled>
                     <div class="reset-info" id="portal-info"></div>
                   </td>
                   <td class="text-center">
                     <span class="status-text text-primary" 
-                           data-username="{{ $msteamAccounts->first()->tai_khoan ?? '' }}" 
+                           data-username="{{ $msteamAccounts->first()->ten_tai_khoan ?? '' }}" 
                            data-type="Portal"
                            onclick="showConfirmModal(this)">🔄</span>
                   </td>
@@ -360,35 +360,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            // Lấy lịch sử reset từ database, sắp xếp theo thời gian mới nhất
-                            $lichSuReset = DB::table('lich_su_reset')
-                                ->whereIn('tai_khoan', 
-                                    array_merge(
-                                        $eduAccounts->pluck('tai_khoan')->toArray(),
-                                        $vleAccounts->pluck('tai_khoan')->toArray(),
-                                        $msteamAccounts->pluck('tai_khoan')->toArray()
-                                    )
-                                )
-                                ->orderBy('thoi_gian_reset', 'desc')
-                                ->get();
-                        @endphp
-
                         @foreach ($lichSuReset as $history)
                         <tr>
                             <td>
                                 @if($history->loai_tai_khoan == 'Teams')
-                                    Microsoft Teams
+                                    <img src="{{ asset('images/teams.png') }}" alt="Teams" width="16" class="me-2"> Microsoft Teams
                                 @elseif($history->loai_tai_khoan == 'VLE')
-                                    VLE
+                                    📝 VLE (học trực tuyến)
                                 @elseif($history->loai_tai_khoan == 'Portal')
-                                    Portal
+                                    👨‍🎓 Portal (MSSV)
                                 @else
                                     {{ $history->loai_tai_khoan }}
                                 @endif
                             </td>
                             <td>{{ $history->tai_khoan }}</td>
-                            <td>{{ $history->mat_khau_moi }}</td>
+                            <td>
+                                <code class="text-primary">{{ $history->mat_khau_moi }}</code>
+                            </td>
                             <td>{{ \Carbon\Carbon::parse($history->thoi_gian_reset)->format('d/m/Y H:i:s') }}</td>
                         </tr>
                         @endforeach
@@ -410,6 +398,7 @@
     let currentAccount = null;
     let redirectData = null;
     let countdownInterval = null;
+    let currentModal = null; 
 
     // Hiển thị modal xác nhận
     function showConfirmModal(element) {
@@ -424,15 +413,22 @@
       
       // Hiển thị thông tin tài khoản trong modal
       document.getElementById('confirmAccount').textContent = `${username} (${type})`;
+
+      // Ẩn modal hiện tại nếu có
+      if (currentModal) {
+          currentModal.hide();
+      }
       
-      const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
-      confirmModal.show();
+      currentModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+      currentModal.show();
     }
 
     // Xác nhận reset
     document.getElementById('confirmResetBtn').addEventListener('click', function() {
-      const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
-      confirmModal.hide();
+      if (currentModal) {
+        currentModal.hide();
+        currentModal = null;
+    }
       
       performReset(currentAccount);
     });
@@ -446,10 +442,12 @@
       try {
         switch(account.type) {
           case 'Teams':
-            url = 'https://ocr.hcmue.edu.vn/reset-password';
+            // url = 'https://ocr.hcmue.edu.vn/reset-password';
+              url = '/form2/reset-password';
             break;
           case 'VLE':
-            url = 'https://ocr.hcmue.edu.vn/reset-vle';
+            // url = 'https://ocr.hcmue.edu.vn/reset-vle';
+            url = '/form2/reset-password';
             break;
           // case 'Portal':
           //   url = 'https://ocr.hcmue.edu.vn/reset-portal';
@@ -464,8 +462,12 @@
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             'Accept': 'application/json'
           },
+          // body: JSON.stringify({
+          //   username: account.username
+          // })
           body: JSON.stringify({
-            username: account.username
+            username: account.username,
+            type: account.type
           })
         });
 
@@ -499,6 +501,12 @@
       document.getElementById('successPassword').textContent = data.password;
       
       redirectData = data;
+
+      // Ẩn modal hiện tại nếu có
+      if (currentModal) {
+          currentModal.hide();
+          currentModal = null;
+      }
       
       // Bắt đầu đếm ngược
       let countdown = 3;
@@ -512,9 +520,15 @@
           redirectToForm3();
         }
       }, 1000);
+
+      currentModal = new bootstrap.Modal(document.getElementById('successModal'));
+      currentModal.show();
+
+      // Tự động refresh lịch sử sau 1 giây
+      setTimeout(() => {
+          refreshResetHistory();
+      }, 1000);
       
-      const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-      successModal.show();
     }
 
     // Hiển thị modal lỗi
@@ -541,9 +555,15 @@
           infoElement.innerHTML = `<small>Có thể reset lại vào: ${data.next_reset_date}</small>`;
         }
       }
+        
+      // Ẩn modal hiện tại nếu có
+      if (currentModal) {
+          currentModal.hide();
+          currentModal = null;
+      }
       
-      const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-      errorModal.show();
+      currentModal = new bootstrap.Modal(document.getElementById('errorModal'));
+      currentModal.show();
     }
 
     // Chuyển hướng đến form3
@@ -559,13 +579,26 @@
 
     // Hiển thị modal xác nhận thoát
     function exitPage() {
-      const exitModal = new bootstrap.Modal(document.getElementById('exitConfirmModal'));
-      exitModal.show();
+      // Ẩn modal hiện tại nếu có
+      if (currentModal) {
+          currentModal.hide();
+          currentModal = null;
+      }
+      
+      currentModal = new bootstrap.Modal(document.getElementById('exitConfirmModal'));
+      currentModal.show();
     }
 
     // Xác nhận thoát và xóa session
     async function confirmExit() {
       try {
+
+        // Ẩn modal trước khi chuyển hướng
+        if (currentModal) {
+            currentModal.hide();
+            currentModal = null;
+        }
+
         // Gửi yêu cầu xóa session
         const response = await fetch('/clear-session', {
           method: 'POST',
@@ -583,6 +616,22 @@
         window.location.href = '/';
       }
     }
+
+    // Thêm event listeners để reset currentModal khi modal bị đóng
+    document.addEventListener('DOMContentLoaded', function() {
+        // Reset currentModal khi các modal bị đóng
+        const modals = ['confirmModal', 'successModal', 'errorModal', 'exitConfirmModal', 'loadingModal'];
+        modals.forEach(modalId => {
+            const modalElement = document.getElementById(modalId);
+            if (modalElement) {
+                modalElement.addEventListener('hidden.bs.modal', function() {
+                    currentModal = null;
+                });
+            }
+        });
+        
+        checkResetStatusOnLoad();
+    });
 
     // Kiểm tra trạng thái reset khi trang load
     async function checkResetStatusOnLoad() {
@@ -636,6 +685,24 @@
     document.addEventListener('DOMContentLoaded', function() {
       checkResetStatusOnLoad();
     });
+
+    // Hàm refresh lịch sử reset
+    async function refreshResetHistory() {
+        try {
+            const response = await fetch('/reset/history');
+            const data = await response.json();
+            
+            if (data.success) {
+                // Cập nhật UI với dữ liệu mới
+                // Có thể reload trang hoặc cập nhật dynamic
+                location.reload(); // Đơn giản nhất là reload trang
+            }
+        } catch (error) {
+            console.error('Error refreshing history:', error);
+        }
+    }
+
+    
   </script>
 </body>
 </html>

@@ -50,7 +50,7 @@
         <div class="mb-4">
             <strong>Mật khẩu:</strong> <span class="text-pass">{{ request()->get('password') }}</span>
         </div>
-        <a href="javascript:history.back()" class="btn btn-home">Quay lại</a>
+        <a href="/form2/view" class="btn btn-home">Quay lại</a>
     </div>
 </div>
 
