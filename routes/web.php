@@ -15,7 +15,7 @@ Route::get('/', function () {
 });
 
 Route::prefix('form2')->group(function() {
-    Route::get('/view', [CccdAuthController::class, 'showForm2']);
+    Route::get('/view', [CccdAuthController::class, 'showForm2'])->name('form2.view');
     Route::post('/check-reset-status', [ResetPassController::class, 'checkResetStatus']);
     Route::post('/reset-password', [ResetPassController::class, 'handleReset']);
 });

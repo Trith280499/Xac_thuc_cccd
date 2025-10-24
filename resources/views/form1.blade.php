@@ -7,88 +7,191 @@
   <title>Hỗ trợ khôi phục tài khoản</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <style>
     :root {
       --primary-color: #124874;
       --accent-color: #CF373D;
     }
     body { background-color: #f6f8fa; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    .upload-card { max-width: 480px; margin: 80px auto; padding: 30px; background: #fff; border-radius: 16px; box-shadow: 0 6px 20px rgba(18,72,116,0.15); border-top: 6px solid var(--primary-color); }
-    .upload-box { border: 2px dashed var(--primary-color); border-radius: 12px; background: #f4f8fb; text-align: center; padding: 40px 20px; cursor: pointer; transition: 0.3s; }
-    .upload-box:hover { background: #eaf2f8; border-color: var(--accent-color); }
-    .preview-image { display: none; width: 100%; border-radius: 10px; margin-top: 10px; }
-    button { background-color: var(--accent-color); border: none; color: #fff; font-weight: 500; border-radius: 8px; padding: 10px 0; width: 100%; }
-    button:hover { background-color: #b82f35; }
+    .upload-card {
+      max-width: 520px;
+      margin: 60px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(18,72,116,0.15);
+      border-top: 6px solid var(--primary-color);
+      text-align: center;
+    }
+    video, canvas {
+      width: 100%;
+      border-radius: 12px;
+      margin-top: 10px;
+      display: none;
+    }
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      color: white;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+    #startBtn { width: 100%; background-color: var(--primary-color); margin-top: 10px; }
+    #captureBtn { width: 100%; background-color: var(--primary-color); display: none; margin-top: 10px; }
+    #retakeBtn { background-color: #6c757d; display: none; width: 48%; }
+    #uploadBtn { background-color: var(--accent-color); display: none; width: 48%; }
+    .button-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 4%;
+      margin-top: 10px;
+    }
+    button:hover { opacity: 0.9; }
+    .info-box {
+      text-align: left;
+      margin-top: 20px;
+      display: none;
+    }
+    .info-box strong { color: var(--primary-color); }
   </style>
 </head>
 <body>
 
-<div class="upload-card text-center">
+<div class="upload-card">
   <img src="{{ asset('images/Logo HCMUE.png') }}" alt="Logo SP HCM" height="80">
-  <h3 class="mb-4 text-primary">TRƯỜNG ĐH SƯ PHẠM TP.HCM</h3>
+  <h4 class="mt-3 mb-2 text-primary">TRƯỜNG ĐH SƯ PHẠM TP.HCM</h4>
   <p class="text-muted">Hệ thống Hỗ trợ khôi phục tài khoản</p>
 
   <div id="alertBox"></div>
 
-  <form id="uploadForm" action="{{ route('cccd.auth') }}" method="POST" enctype="multipart/form-data">
-    @csrf
+  <!-- Camera preview -->
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas"></canvas>
 
-    <input type="file" id="fileInput" name="cccd" accept="image/*" style="opacity:0; width:0; height:0; position:absolute;" required>
+  <!-- Buttons -->
+  <button id="startBtn">Xác thực</button>
+  <button id="captureBtn">Chụp ảnh</button>
+  <div class="button-row">
+    <button id="retakeBtn">Chụp lại</button>
+    <button id="uploadBtn">Gửi</button>
+  </div>
 
-    <div class="upload-box mb-3" id="dropArea">
-      <div id="uploadInfo">
-        <img id="icon" src="https://cdn-icons-png.flaticon.com/512/1829/1829589.png" width="60" alt="upload">
-        <p class="fw-semibold mb-1">Thả ảnh vào hoặc <span class="text-primary">browse</span></p>
-        <small class="text-muted">Hỗ trợ: JPG, PNG, JPEG2000</small>
-      </div>
-      <img id="previewImage" class="preview-image" alt="Preview CCCD">
-    </div>
-
-    <button type="submit">Xác thực</button>
-  </form>
+  <!-- Display extracted info -->
+  <div id="infoBox" class="info-box border rounded p-3 bg-light"></div>
 </div>
 
 <footer class="text-center text-muted mt-4">© 2025 Ho Chi Minh City University of Education</footer>
 
 <script>
-  const dropArea = document.getElementById('dropArea');
-  const fileInput = document.getElementById('fileInput');
-  const previewImage = document.getElementById('previewImage');
-  const uploadInfo = document.getElementById('uploadInfo');
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const startBtn = document.getElementById('startBtn');
+  const captureBtn = document.getElementById('captureBtn');
+  const retakeBtn = document.getElementById('retakeBtn');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const alertBox = document.getElementById('alertBox');
+  const infoBox = document.getElementById('infoBox');
+  let stream;
 
-  dropArea.addEventListener('click', () => fileInput.click());
-  dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('dragover'); });
-  dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
-  dropArea.addEventListener('drop', e => {
-    e.preventDefault(); dropArea.classList.remove('dragover');
-    fileInput.files = e.dataTransfer.files;
-    handleFile(fileInput.files[0]);
+  //Start camera
+  startBtn.addEventListener('click', async () => {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = stream;
+      video.style.display = 'block';
+      startBtn.style.display = 'none';
+      captureBtn.style.display = 'block';
+    } catch (err) {
+      showAlert("Không thể truy cập camera: " + err.message, "danger");
+    }
   });
-  fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
 
-  function handleFile(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      previewImage.src = e.target.result;
-      uploadInfo.style.display = 'none';
-      previewImage.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-  }
+  // Take a photo
+  captureBtn.addEventListener('click', () => {
+    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    video.style.display = 'none';
+    canvas.style.display = 'block';
+    captureBtn.style.display = 'none';
+    retakeBtn.style.display = 'inline-block';
+    uploadBtn.style.display = 'inline-block';
+  });
 
+  // Retake
+  retakeBtn.addEventListener('click', () => {
+    infoBox.style.display = 'none';
+    canvas.style.display = 'none';
+    video.style.display = 'block';
+    captureBtn.style.display = 'block';
+    retakeBtn.style.display = 'none';
+    uploadBtn.style.display = 'none';
+  });
 
-  function toBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
+  // Send image to Laravel /cccd-auth
+  uploadBtn.addEventListener('click', async () => {
+    const base64Image = canvas.toDataURL('image/jpeg');
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const blob = await (await fetch(base64Image)).blob();
+    const formData = new FormData();
+    formData.append('cccd', blob, 'cccd_image.jpg');
+
+    try {
+      showAlert("Đang xử lý ảnh, vui lòng chờ...", "info");
+
+      const response = await fetch("/cccd-auth", {
+      method: "POST",
+      headers: { "X-CSRF-TOKEN": token },
+      body: formData
     });
+
+    if (response.redirected) {
+      window.location.href = response.url;  
+    }
+      const result = await response.json();
+
+      if (result.status === "success") {
+        showAlert("✅ " + result.message, "success");
+        displayInfo(result.ocr_data, result.student);
+      } else if (result.status === "warning") {
+        showAlert("⚠️ " + result.message, "warning");
+        displayInfo(result.ocr_data);
+      } else {
+        showAlert("❌ " + result.message, "danger");
+      }
+
+    } catch (err) {
+      showAlert("❌ Lỗi khi gửi ảnh: " + err.message, "danger");
+    }
+  });
+
+  //Show OCR + student results
+  function displayInfo(ocr, student = null) {
+    infoBox.style.display = 'block';
+    infoBox.innerHTML = `
+      <p><strong>Số CCCD:</strong> ${ocr?.id || 'Không xác định'}</p>
+      <p><strong>Họ và tên:</strong> ${ocr?.full_name || ''}</p>
+      <p><strong>Ngày sinh:</strong> ${ocr?.date_of_birth || ''}</p>
+      <p><strong>Giới tính:</strong> ${ocr?.sex || ''}</p>
+      <p><strong>Quốc tịch:</strong> ${ocr?.nationality || ''}</p>
+      <p><strong>Nguyên quán:</strong> ${ocr?.place_of_origin || ''}</p>
+      <p><strong>Nơi thường trú:</strong> ${ocr?.place_of_residence || ''}</p>
+      <p><strong>Ngày hết hạn:</strong> ${ocr?.date_of_expiry || ''}</p>
+      ${student ? `
+        <hr>
+        <h6 class="text-primary mt-3">🎓 Thông tin sinh viên</h6>
+        <p><strong>Tên:</strong> ${student.ho_ten || ''}</p>
+        <p><strong>Lớp:</strong> ${student.lop || ''}</p>
+        <p><strong>Email:</strong> ${student.email || ''}</p>
+      ` : ''}
+    `;
   }
 
+  // Helper: show alert
   function showAlert(message, type) {
-    const alertBox = document.getElementById('alertBox');
     alertBox.innerHTML = `
       <div class="alert alert-${type} alert-dismissible fade show mt-3" role="alert">
         ${message}
@@ -135,5 +238,10 @@
     }
 });
 </script>
+
+
 </body>
 </html>
+
+
+

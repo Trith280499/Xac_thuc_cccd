@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class CccdAuthController extends Controller
 {
@@ -43,6 +44,8 @@ class CccdAuthController extends Controller
         // Lấy đường dẫn public để hiển thị
         $imageUrl = asset('storage/cccd/' . $fileName);
 
+        // Đường dẫn tạm để gửi cho OCR API
+        $tempFile = storage_path('app/public/cccd/' . $fileName);
 
         // Giả lập CCCD number - trong thực tế sẽ được trích xuất từ ảnh
         $cccdText = '001123456789';
@@ -50,33 +53,53 @@ class CccdAuthController extends Controller
         // Lưu lại ảnh đã decode để hiển thị ở form2
         // $base64Img = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
 
-        // Lấy thông tin từ database
-        $student = DB::table('sinh_vien')->where('so_cccd', $cccdText)->first();
-        
-        if (!$student) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Không tìm thấy thông tin sinh viên'
-            ], 404);
-        }
+            // Call OCR API
+           $ocrResponse = Http::withoutVerifying()->withHeaders([
+                'x-api-key' => '5dd1b197-c051-42c9-8f3f-4accd12335ex',
+            ])->attach(
+                'myfile', fopen($tempFile, 'r'), 'cccd_image.' . $ext
+            )->post('https://ocr.hcmue.edu.vn/extract');
 
-        $cccdData = DB::table('can_cuoc_cong_dan')->where('so_cccd', $cccdText)->first();
+            // unlink($tempFile);
 
-        // Query các tài khoản
-        $eduAccounts = DB::table('tai_khoan_edu')
-            ->where('id', $student->tai_khoan_edu_id)
-            ->get();
+            if (!$ocrResponse->ok()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'OCR API lỗi: ' . $ocrResponse->status()
+                ], 500);
+            }
 
-        $vleAccounts = DB::table('tai_khoan_vle')
-            ->where('id', $student->tai_khoan_vle_id)
-            ->get();
+            $ocrData = $ocrResponse->json();
 
-        $msteamAccounts = DB::table('tai_khoan_ms_team')
-            ->where('id', $student->tai_khoan_ms_team_id)
-            ->get();
+            if (empty($ocrData['id'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'OCR không nhận dạng được CCCD'
+                ], 422);
+            }
 
-        // Sau khi xác thực thành công, lưu session
-        session([
+            // Use OCR result as input
+            $cccdText = $ocrData['id'];
+            // $base64Img = 'data:image/' . $type . ';base64,' . base64_encode($imageData);
+
+            // Query database
+            $student = DB::table('sinh_vien')->where('so_cccd', $cccdText)->first();
+
+            if (!$student) {
+                return response()->json([
+                    'status' => 'warning',
+                    'message' => 'Không tìm thấy sinh viên trong DB',
+                    'ocr_data' => $ocrData
+                ], 200);
+            }
+
+            // Optional: query related tables
+            $cccdData = DB::table('can_cuoc_cong_dan')->where('so_cccd', $cccdText)->first();
+            $eduAccounts = DB::table('tai_khoan_edu')->where('id', $student->tai_khoan_edu_id)->get();
+            $vleAccounts = DB::table('tai_khoan_vle')->where('id', $student->tai_khoan_vle_id)->get();
+            $msteamAccounts = DB::table('tai_khoan_ms_team')->where('id', $student->tai_khoan_ms_team_id)->get();
+
+            session([
             'cccd_authenticated' => true,
             'cccd_number' => $cccdText,
             'student_data' => [
@@ -85,26 +108,32 @@ class CccdAuthController extends Controller
                 'eduAccounts' => $eduAccounts,
                 'vleAccounts' => $vleAccounts,
                 'msteamAccounts' => $msteamAccounts,
-                'imageUrl' => $imageUrl
+                'imageUrl' => $imageUrl, 
+                'ocrData' => $ocrData
             ]
         ]);
 
-        return view('form2', [
-            'sv' => $student,
-            'cccdData' => $cccdData,
-            'imageUrl' => $imageUrl,
-            'eduAccounts' => $eduAccounts,
-            'vleAccounts' => $vleAccounts,
-            'msteamAccounts' => $msteamAccounts
-        ]);
+        // Redirect to Form 2
+        return redirect()->route('form2.view');
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Lỗi xử lý: ' . $e->getMessage()
-        ], 500);
+        // return view('form2', [
+        //     'sv' => $student,
+        //     'cccdData' => $cccdData,
+        //     'imageUrl' => $imageUrl,
+        //     'eduAccounts' => $eduAccounts,
+        //     'vleAccounts' => $vleAccounts,
+        //     'msteamAccounts' => $msteamAccounts
+        // ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Lỗi xử lý: ' . $e->getMessage()
+            ], 500);
+        }
     }
-}
+
+
 
 // Thêm method đăng xuất
 public function logout()

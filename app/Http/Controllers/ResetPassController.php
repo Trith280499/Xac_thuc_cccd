@@ -120,6 +120,7 @@ class ResetPassController extends Controller
                             'mat_khau' => $newPassword,
                             'ngay_reset' => now()
                         ]);
+                    session(['edu_new_password' => $newPassword]);
                     break;
                 case 'VLE': 
                     DB::table(_VLE)
@@ -128,6 +129,7 @@ class ResetPassController extends Controller
                             'mat_khau' => $newPassword,
                             'ngay_reset' => now()
                         ]);
+                    session(['vle_new_password' => $newPassword]);
                     break;
                 case 'Portal':
                     DB::table(_MSTEAM)
@@ -136,6 +138,7 @@ class ResetPassController extends Controller
                             'mat_khau' => $newPassword,
                             'ngay_reset' => now()
                         ]);
+                    session(['portal_new_password' => $newPassword]);
                     break;
             }
 
@@ -148,7 +151,7 @@ class ResetPassController extends Controller
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
-
+                
             DB::commit();
 
             return response()->json([

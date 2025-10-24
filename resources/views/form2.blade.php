@@ -337,7 +337,7 @@
                 <tr>
                   <td>Microsoft Teams</td>
                   <td>{{ $acc->tai_khoan }}</td>
-                  <td>{{ $acc->mat_khau }}</td>
+                  <td>{{ $edu_new_password ?? $acc->mat_khau }}</td>
                   <td>{{ $acc->ngay_reset ?? '---' }}</td>
                 </tr>
                 @endforeach
@@ -347,7 +347,7 @@
                 <tr>
                   <td>VLE</td>
                   <td>{{ $acc->tai_khoan }}</td>
-                  <td>{{ $acc->mat_khau }}</td>
+                  <td>{{ $vle_new_password ?? $acc->mat_khau }}</td>
                   <td>{{ $acc->ngay_reset ?? '---' }}</td>
                 </tr>
                 @endforeach
@@ -357,7 +357,7 @@
                 <tr>
                   <td>Portal</td>
                   <td>{{ $acc->tai_khoan }}</td>
-                  <td>{{ $acc->mat_khau }}</td>
+                  <td>{{ $portal_new_password ?? $acc->mat_khau }}</td>
                   <td>{{ $acc->ngay_reset ?? '---' }}</td>
                 </tr>
                 @endforeach
