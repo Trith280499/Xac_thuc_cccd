@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 Route::post('/cccd-auth', [CccdAuthController::class, 'authenticate'])->name('cccd.auth');
 Route::get('/logout', [CccdAuthController::class, 'logout'])->name('logout');
+Route::post('/reset-password', [CccdAuthController::class, 'resetPassword'])->name('reset.password');
+Route::post('/manual-approval', [CccdAuthController::class, 'manualApproval'])->name('manual.approval');
 
 Route::get('/', function () {
     return view('form1');

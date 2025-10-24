@@ -7,6 +7,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\SinhVien;
+use App\Models\CanCuocCongDan;
+use App\Models\User;
+use App\Models\TaiKhoan;
+use App\Models\LoaiTaiKhoan;
+use App\Models\XetDuyet;
 
 class CccdAuthController extends Controller
 {
@@ -68,32 +74,44 @@ class CccdAuthController extends Controller
             // Use OCR result as input
             $cccdText = $ocrData['id'];
 
-            // Query database
-            $student = DB::table('sinh_vien')->where('so_cccd', $cccdText)->first();
+            // Query database với cấu trúc mới
+            $student = SinhVien::with(['canCuocCongDan', 'taiKhoans.loaiTaiKhoan'])
+                ->where('so_cccd', $cccdText)
+                ->first();
 
             if (!$student) {
-                // Vẫn giữ ảnh trong trường hợp không tìm thấy sinh viên
+                // Tạo bản ghi xét duyệt nếu không tìm thấy sinh viên
+                XetDuyet::create([
+                    'mssv_input' => 'unknown', // hoặc có thể lấy từ OCR nếu có
+                    'cccd_input' => $cccdText,
+                    'trang_thai' => 'pending',
+                    'ghi_chu' => 'Không tìm thấy sinh viên trong hệ thống'
+                ]);
+
                 return response()->json([
                     'status' => 'warning',
-                    'message' => 'Không tìm thấy sinh viên trong DB',
+                    'message' => 'Không tìm thấy sinh viên trong DB. Đã ghi nhận để xét duyệt.',
                     'ocr_data' => $ocrData,
                     'image_url' => $imageUrl
                 ], 200);
             }
 
-            $cccdData = DB::table('can_cuoc_cong_dan')->where('so_cccd', $cccdText)->first();
-            $eduAccounts = DB::table('tai_khoan_edu')->where('id', $student->tai_khoan_edu_id)->get();
-            $vleAccounts = DB::table('tai_khoan_vle')->where('id', $student->tai_khoan_vle_id)->get();
-            $msteamAccounts = DB::table('tai_khoan_ms_team')->where('id', $student->tai_khoan_ms_team_id)->get();
-
-            if ($cccdData){
-                DB::table('can_cuoc_cong_dan')
-                    ->where('so_cccd', $cccdText)
-                    ->update([
-                        'anh_cccd' => $imageUrl,
-                        'updated_at' => now()
-                    ]);
+            // Cập nhật ảnh CCCD
+            if ($student->canCuocCongDan) {
+                $student->canCuocCongDan->update([
+                    'anh_cccd' => $imageUrl,
+                    'updated_at' => now()
+                ]);
             }
+
+            // Lấy thông tin tài khoản theo loại
+            $taiKhoans = $student->taiKhoans;
+            $eduAccounts = $taiKhoans->where('loaiTaiKhoan.ten_loai', 'EDU');
+            $vleAccounts = $taiKhoans->where('loaiTaiKhoan.ten_loai', 'VLE');
+            $msteamAccounts = $taiKhoans->where('loaiTaiKhoan.ten_loai', 'MS_TEAM');
+
+            // Lấy thông tin user
+            $user = User::where('mssv', $student->mssv)->first();
             
             // Lưu thông tin vào session
             session([
@@ -101,7 +119,8 @@ class CccdAuthController extends Controller
                 'cccd_number' => $cccdText,
                 'student_data' => [
                     'sv' => $student,
-                    'cccdData' => $cccdData,
+                    'user' => $user,
+                    'cccdData' => $student->canCuocCongDan,
                     'eduAccounts' => $eduAccounts,
                     'vleAccounts' => $vleAccounts,
                     'msteamAccounts' => $msteamAccounts,
@@ -143,12 +162,124 @@ class CccdAuthController extends Controller
 
         return view('form2', [
             'sv' => $data['sv'] ?? null,
+            'user' => $data['user'] ?? null,
             'cccdData' => $data['cccdData'] ?? null,
             'image_url' => $data['image_url'] ?? null,
             'eduAccounts' => $data['eduAccounts'] ?? collect(),
             'vleAccounts' => $data['vleAccounts'] ?? collect(),
             'msteamAccounts' => $data['msteamAccounts'] ?? collect(),
         ]);
+    }
+
+    // Method để reset mật khẩu
+    public function resetPassword(Request $request)
+    {
+        try {
+            if (!session('cccd_authenticated')) {
+                return response()->json(['status' => 'error', 'message' => 'Chưa xác thực CCCD'], 401);
+            }
+
+            $taiKhoanId = $request->input('tai_khoan_id');
+            $matKhauMoi = $request->input('mat_khau_moi');
+
+            $taiKhoan = TaiKhoan::find($taiKhoanId);
+            
+            if (!$taiKhoan) {
+                return response()->json(['status' => 'error', 'message' => 'Tài khoản không tồn tại'], 404);
+            }
+
+            // Kiểm tra xem tài khoản có thuộc về sinh viên đã xác thực không
+            $studentData = session('student_data');
+            if ($taiKhoan->sinh_vien_id !== $studentData['sv']->id) {
+                return response()->json(['status' => 'error', 'message' => 'Tài khoản không thuộc về sinh viên này'], 403);
+            }
+
+            // Cập nhật mật khẩu
+            $taiKhoan->update([
+                'mat_khau' => $matKhauMoi,
+                'ngay_reset' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Ghi lịch sử reset
+            DB::table('lich_su_reset')->insert([
+                'tai_khoan_id' => $taiKhoan->id,
+                'mat_khau_moi' => $matKhauMoi,
+                'thoi_gian_reset' => now(),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Reset mật khẩu thành công'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Lỗi reset mật khẩu: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Method để xử lý xét duyệt thủ công
+    public function manualApproval(Request $request)
+    {
+        try {
+            $mssv = $request->input('mssv');
+            $cccd = $request->input('cccd');
+
+            // Tìm sinh viên theo MSSV và CCCD
+            $student = SinhVien::with(['canCuocCongDan', 'taiKhoans.loaiTaiKhoan'])
+                ->where('mssv', $mssv)
+                ->where('so_cccd', $cccd)
+                ->first();
+
+            if (!$student) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Không tìm thấy sinh viên với MSSV và CCCD khớp'
+                ], 404);
+            }
+
+            // Lấy thông tin tài khoản
+            $taiKhoans = $student->taiKhoans;
+            $eduAccounts = $taiKhoans->where('loaiTaiKhoan.ten_loai', 'EDU');
+            $vleAccounts = $taiKhoans->where('loaiTaiKhoan.ten_loai', 'VLE');
+            $msteamAccounts = $taiKhoans->where('loaiTaiKhoan.ten_loai', 'MS_TEAM');
+
+            // Lấy thông tin user
+            $user = User::where('mssv', $student->mssv)->first();
+
+            // Lưu thông tin vào session
+            session([
+                'cccd_authenticated' => true,
+                'cccd_number' => $cccd,
+                'student_data' => [
+                    'sv' => $student,
+                    'user' => $user,
+                    'cccdData' => $student->canCuocCongDan,
+                    'eduAccounts' => $eduAccounts,
+                    'vleAccounts' => $vleAccounts,
+                    'msteamAccounts' => $msteamAccounts,
+                    'image_url' => $student->canCuocCongDan->anh_cccd ?? null,
+                    'manual_approval' => true
+                ]
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Xác thực thủ công thành công',
+                'redirect' => route('form2.view')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Lỗi xác thực thủ công: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     // Thêm method để xóa ảnh cũ nếu cần
