@@ -666,46 +666,69 @@
       }
       
       // Show application details in modal
-      function showApplicationDetail(appId) {
-        const app = currentApplications.find(a => a.id == appId);
-        if (!app) return;
-        
-        document.getElementById('detailCccd').textContent = app.cccd_input || 'Chưa có thông tin';
-        document.getElementById('detailName').textContent = app.ho_ten || `Sinh viên ${app.mssv_input}`;
-        document.getElementById('detailDob').textContent = app.ngay_sinh || 'Chưa có thông tin';
-        document.getElementById('detailMssv').textContent = app.mssv_input || 'Chưa có thông tin';
-        document.getElementById('detailFrontImage').src = app.anh_cccd || '/storage/cccd_images/default.jpg';
-        document.getElementById('detailSubmitTime').textContent = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : 'Chưa có thông tin';
-        document.getElementById('rejectReason').value = app.ghi_chu || '';
-        
-        // Update status badge
-        const statusBadge = document.getElementById('detailStatusBadge');
-        statusBadge.className = `status-badge status-${app.trang_thai} me-2`;
-        switch(app.trang_thai) {
-          case 'pending': statusBadge.textContent = 'Đang chờ'; break;
-          case 'approved': statusBadge.textContent = 'Đã duyệt'; break;
-          case 'rejected': statusBadge.textContent = 'Đã từ chối'; break;
-          default: statusBadge.textContent = 'Đang chờ';
-        }
-        
-        // Set current app id for action buttons
-        document.getElementById('approveBtn').setAttribute('data-app-id', app.id);
-        document.getElementById('rejectBtn').setAttribute('data-app-id', app.id);
-        
-        // Show/hide action buttons based on status
-        if (app.trang_thai === 'pending') {
-          document.getElementById('approveBtn').style.display = 'inline-block';
-          document.getElementById('rejectBtn').style.display = 'inline-block';
-          document.getElementById('rejectReason').disabled = false;
-        } else {
-          document.getElementById('approveBtn').style.display = 'none';
-          document.getElementById('rejectBtn').style.display = 'none';
-          document.getElementById('rejectReason').disabled = true;
-        }
-        
-        detailModal.show();
-      }
-      
+  function showApplicationDetail(appId) {
+  const app = currentApplications.find(a => a.id == appId);
+  if (!app) {
+    alert("Không tìm thấy dữ liệu chi tiết!");
+    return;
+  }
+
+  // 🔹 Thông tin chung
+  document.getElementById('detailMssv').textContent = app.mssv_input || '-';
+  document.getElementById('detailCccd').textContent = app.cccd_input || '-';
+  document.getElementById('detailSubmitTime').textContent = app.created_at 
+    ? new Date(app.created_at).toLocaleString('vi-VN') 
+    : '-';
+  document.getElementById('detailUpdateTime').textContent = app.updated_at 
+    ? new Date(app.updated_at).toLocaleString('vi-VN') 
+    : '-';
+
+  // 🔹 Trạng thái
+  const statusBadge = document.getElementById('detailStatusBadge');
+  statusBadge.className = `status-badge status-${app.trang_thai}`;
+  switch (app.trang_thai) {
+    case 'pending': statusBadge.textContent = 'Đang chờ'; break;
+    case 'approved': statusBadge.textContent = 'Đã duyệt'; break;
+    case 'rejected': statusBadge.textContent = 'Đã từ chối'; break;
+    default: statusBadge.textContent = 'Không xác định';
+  }
+
+  // 🔹 Thông tin CCCD (toàn bộ lấy trực tiếp từ app)
+  document.getElementById('detailName').textContent = app.ho_ten || '-';
+  document.getElementById('detailDob').textContent = app.ngay_sinh || '-';
+  document.getElementById('detailGender').textContent = app.gioi_tinh || '-';
+  document.getElementById('detailHometown').textContent = app.que_quan || '-';
+  document.getElementById('detailAddress').textContent = app.noi_thuong_tru || '-';
+  document.getElementById('detailIssueDate').textContent = app.ngay_cap || '-';
+  document.getElementById('detailIssuePlace').textContent = app.noi_cap || '-';
+
+  // 🔹 Hình ảnh CCCD
+  document.getElementById('detailFrontImage').src = 
+    app.anh_cccd_moi || app.anh_cccd || '/storage/cccd_images/default.jpg';
+
+  // 🔹 Lịch sử & ghi chú
+  document.getElementById('detailCurrentNote').textContent = app.ghi_chu || '-';
+  document.getElementById('rejectReason').value = '';
+
+  // 🔹 Gán ID cho nút hành động
+  document.getElementById('approveBtn').setAttribute('data-app-id', app.id);
+  document.getElementById('rejectBtn').setAttribute('data-app-id', app.id);
+
+  // 🔹 Hiển thị hoặc ẩn nút tùy theo trạng thái
+  if (app.trang_thai === 'pending') {
+    document.getElementById('approveBtn').style.display = 'inline-block';
+    document.getElementById('rejectBtn').style.display = 'inline-block';
+    document.getElementById('rejectReason').disabled = false;
+  } else {
+    document.getElementById('approveBtn').style.display = 'none';
+    document.getElementById('rejectBtn').style.display = 'none';
+    document.getElementById('rejectReason').disabled = true;
+  }
+
+  // 🔹 Mở modal
+  detailModal.show();
+}
+
       // Update application status
       async function updateApplicationStatus(appId, status, reason = '') {
         try {

@@ -79,15 +79,30 @@ class CccdAuthController extends Controller
                 ->where('so_cccd', $cccdText)
                 ->first();
 
-            if (!$student) {
+           if (!$student) {
+            session([
+                'cccd_authenticated' => false, // chưa xác thực sinh viên
+                'cccd_number' => $cccdText,
+                'extracted_cccd' => [
+                    'so_cccd'        => $ocrData['id'] ?? null,
+                    'ho_ten'         => $ocrData['full_name'] ?? null,
+                    'ngay_sinh'      => $ocrData['date_of_birth'] ?? null,
+                    'gioi_tinh'      => $ocrData['sex'] ?? null,
+                    'quoc_tich'      => $ocrData['nationality'] ?? null,
+                    'que_quan'       => $ocrData['place_of_origin'] ?? null,
+                    'noi_thuong_tru' => $ocrData['place_of_residence'] ?? null,
+                    'ngay_het_han'   => $ocrData['date_of_expiry'] ?? null,
+                    'anh_cccd'       => $imageUrl ?? null,
+                ],
+            ]);
 
-                return response()->json([
-                    'status' => 'warning',
-                    'message' => 'Không tìm thấy sinh viên trong DB. Đã ghi nhận để xét duyệt.',
-                    'ocr_data' => $ocrData,
-                    'image_url' => $imageUrl
-                ], 200);
-            }
+            return response()->json([
+                'status' => 'warning',
+                'message' => 'Không tìm thấy sinh viên trong DB',
+                'ocr_data' => $ocrData,
+                'image_url' => $imageUrl
+            ], 200);
+        }
 
             // Cập nhật ảnh CCCD
             if ($student->canCuocCongDan) {
