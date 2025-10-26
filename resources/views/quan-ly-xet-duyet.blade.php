@@ -757,7 +757,7 @@
           if (result.success) {
             if(status === 'approved') {
               alert('Cập nhật trạng thái thành công!');
-              window.location.href = '/quan-ly-kich-hoat';
+              window.location.href = '/quan-ly-loai-tai-khoan';
             }
           } else {
             // Reload applications to get updated data
