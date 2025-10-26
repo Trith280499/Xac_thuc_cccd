@@ -38,7 +38,36 @@ class CccdVerifyController extends Controller
             ], 500);
         }
     }
-    public function submitApproval(Request $request)
+
+    private function safeParseDate($dateString)
+    {
+        if (empty($dateString)) return null;
+
+        $dateString = trim($dateString);
+
+        // Chuẩn hóa tất cả dấu ngăn cách về dạng "/"
+        $normalized = str_replace(['-', '.', ' '], '/', $dateString);
+
+        try {
+            // Nếu là dạng dd/mm/yyyy
+            if (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $normalized)) {
+                return \Carbon\Carbon::createFromFormat('d/m/Y', $normalized)->format('Y-m-d');
+            }
+
+            // Nếu là dạng yyyy-mm-dd (đã chuẩn)
+            if (preg_match('/^\d{4}\/\d{1,2}\/\d{1,2}$/', $normalized)) {
+                return \Carbon\Carbon::createFromFormat('Y/m/d', $normalized)->format('Y-m-d');
+            }
+
+            // Thử auto parse nếu không khớp mẫu nào
+            return \Carbon\Carbon::parse($normalized)->format('Y-m-d');
+        } catch (\Exception $e) {
+            \Log::warning('⚠️ Date parse failed for: '.$dateString.' | '.$e->getMessage());
+            return null;
+        }
+    }
+
+        public function submitApproval(Request $request)
     {
         try {
             $mssv = $request->input('mssv');
@@ -52,9 +81,8 @@ class CccdVerifyController extends Controller
                 ], 400);
             }
 
-            // Kiểm tra xem CCCD đã tồn tại chưa trước khi tạo mới
+            // Kiểm tra xem CCCD đã được gửi yêu cầu trước chưa
             $existingRecord = XetDuyet::where('cccd_input', $cccd)->first();
-            
             if ($existingRecord) {
                 return response()->json([
                     'success' => false,
@@ -62,18 +90,43 @@ class CccdVerifyController extends Controller
                 ], 400);
             }
 
-            // Tạo bản ghi xét duyệt
+            //  Lấy dữ liệu OCR đã lưu trong session
+            $sessionData = session('extracted_cccd');
+
+            if (!$sessionData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy dữ liệu CCCD trong session. Vui lòng xác thực lại.'
+                ], 400);
+            }
+
+            // Tạo bản ghi xét duyệt mới từ thông tin session
             XetDuyet::create([
-                'mssv_input' => $mssv,
-                'cccd_input' => $cccd,
-                'trang_thai' => 'pending',
-                'anh_cccd' => $imageUrl,
-                'ghi_chu' => 'Chờ xét duyệt thông tin MSSV và CCCD'
+                'mssv_input'          => $mssv,
+                'cccd_input'          => $cccd,
+                'trang_thai'          => 'pending',
+                'anh_cccd'            => $imageUrl ?? $sessionData['anh_cccd'] ?? null,
+                'ghi_chu'             =>null,
+
+                // Dữ liệu CCCD trích xuất (theo migration)
+                'so_cccd'             => $sessionData['so_cccd'] ?? null,
+                'ho_ten'              => $sessionData['ho_ten'] ?? null,
+                'ngay_sinh'     => $this->safeParseDate($sessionData['ngay_sinh'] ?? null),
+
+                'gioi_tinh'           => $sessionData['gioi_tinh'] ?? null,
+                'quoc_tich'           => $sessionData['quoc_tich'] ?? 'Việt Nam',
+                'que_quan'            => $sessionData['que_quan'] ?? null,
+                'noi_thuong_tru'      => $sessionData['noi_thuong_tru'] ?? null,
+                'ngay_het_han'  => $this->safeParseDate($sessionData['ngay_het_han'] ?? null),
+                'trang_thai_cccd'     => 'active',
             ]);
+
+            // Xóa session sau khi lưu để tránh duplicate
+            session()->forget('extracted_cccd');
 
             return response()->json([
                 'success' => true,
-                'message' => 'Đã gửi yêu cầu xét duyệt thành công. Vui lòng chờ xét duyệt từ quản trị viên.'
+                'message' => 'Đã gửi yêu cầu xét duyệt thành công. Vui lòng chờ quản trị viên duyệt.'
             ]);
 
         } catch (\Exception $e) {
@@ -83,6 +136,7 @@ class CccdVerifyController extends Controller
             ], 500);
         }
     }
+
 
     // Lấy tất cả các yêu cầu xét duyệt
     public function getAllApprovals()
