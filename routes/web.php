@@ -66,6 +66,7 @@ Route::prefix('quan-ly-xet-duyet')->group(function() {
     })->name('quan-ly-xet-duyet.form');
     Route::get('/', [CccdVerifyController::class, 'getAllApprovals']);
     Route::post('/', [CccdVerifyController::class, 'updateApprovalStatus'])->name('update.approval.status');
+    Route::get('/getAllLoaiTK', [CccdVerifyController::class, 'getAllLoaiTK']);
 });
 
 
