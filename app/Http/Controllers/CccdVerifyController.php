@@ -2,7 +2,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\XetDuyet;
+use App\Models\LoaiTaiKhoan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Http;
 
 class CccdVerifyController extends Controller
@@ -38,6 +40,50 @@ class CccdVerifyController extends Controller
             ], 500);
         }
     }
+
+
+public function getAllLoaiTK(Request $request)
+{
+    try {
+        // 1️⃣ Kiểm tra xem session đã có chưa
+        $existingSession = session('mangLoaiTK');
+        if ($existingSession) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Dữ liệu loại tài khoản đã tồn tại trong session.',
+                'data' => $existingSession
+            ]);
+        }
+
+        // 2️⃣ Lấy danh sách loại tài khoản active bằng Eloquent
+        $activeAccounts = LoaiTaiKhoan::where('trang_thai', 'active')
+            ->select('id', 'ten_loai', 'mo_ta', 'trang_thai')
+            ->get();
+
+        // 3️⃣ Kiểm tra có dữ liệu không
+        if ($activeAccounts->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy loại tài khoản nào có trạng thái active.'
+            ], 404);
+        }
+
+        // 4️⃣ Lưu vào session để dùng sau (giống extracted_cccd)
+        Session::put('mangLoaiTK', $activeAccounts);
+
+        // 5️⃣ Trả về JSON phản hồi
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã lấy danh sách loại tài khoản active và lưu vào session thành công.',
+            'data' => $activeAccounts
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Lỗi khi lấy danh sách loại tài khoản: ' . $e->getMessage()
+        ], 500);
+    }
+}
 
     private function safeParseDate($dateString)
     {
@@ -150,6 +196,7 @@ class CccdVerifyController extends Controller
             ], 500);
         }
     }
+
 
     // Cập nhật trạng thái xét duyệt
     public function updateApprovalStatus(Request $request)
