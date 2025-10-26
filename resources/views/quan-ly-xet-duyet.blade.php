@@ -732,10 +732,13 @@
           const result = await response.json();
           
           if (result.success) {
+            if(status === 'approved') {
+              alert('Cập nhật trạng thái thành công!');
+              window.location.href = '/quan-ly-kich-hoat';
+            }
+          } else {
             // Reload applications to get updated data
             loadApplications();
-            alert('Cập nhật trạng thái thành công!');
-          } else {
             alert('Có lỗi xảy ra: ' + (result.message || 'Không xác định'));
           }
         } catch (error) {

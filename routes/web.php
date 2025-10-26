@@ -14,6 +14,11 @@ Route::post('/cccd-auth', [CccdAuthController::class, 'authenticate'])->name('cc
 Route::get('/logout', [CccdAuthController::class, 'logout'])->name('logout');
 Route::post('/manual-approval', [CccdAuthController::class, 'manualApproval'])->name('manual.approval');
 
+Route::get('/activated-cccds', [CccdVerifyController::class, 'getActivatedCccds']);
+Route::get('/activated-cccds/paginated', [CccdVerifyController::class, 'getActivatedCccdsPaginated']);
+Route::get('/activated-cccds/search', [CccdVerifyController::class, 'searchActivatedCccds']);
+Route::get('/activated-cccds/{id}', [CccdVerifyController::class, 'getActivatedCccdDetail']);
+
 Route::prefix('form2')->group(function() {
     Route::get('/view', [CccdAuthController::class, 'showForm2'])->name('form2.view');
     
@@ -66,6 +71,21 @@ Route::prefix('quan-ly-xet-duyet')->group(function() {
     })->name('quan-ly-xet-duyet.form');
     Route::get('/', [CccdVerifyController::class, 'getAllApprovals']);
     Route::post('/', [CccdVerifyController::class, 'updateApprovalStatus'])->name('update.approval.status');
+});
+
+//Form quản lý kích hoạt
+Route::prefix('quan-ly-kich-hoat')->group(function() {
+    Route::get('/view', function () {
+        return view('quan-ly-kich-hoat');
+    })->name('quan-ly-kich-hoat.form');
+
+    Route::get('/', function () {
+        return view('quan-ly-kich-hoat');
+    })->name('quan-ly-kich-hoat');
+    
+    // Route API để lấy dữ liệu
+    Route::get('/api/danh-sach', [CccdVerifyController::class, 'getActivatedCccds']);
+    // Route::get('/', [CccdVerifyController::class, 'getActivatedCccds'])->name('quan-ly-kich-hoat');
 });
 
 

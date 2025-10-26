@@ -133,4 +133,142 @@ class CccdVerifyController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Lấy danh sách các CCCD đã được kích hoạt
+     */
+    public function getActivatedCccds(Request $request)
+    {
+        try {
+            // Lấy các bản ghi có trạng thái là 'approved' (đã duyệt)
+            $activatedCccds = XetDuyet::where('trang_thai', 'approved')
+                ->select('id', 'mssv_input', 'cccd_input', 'anh_cccd', 'ghi_chu', 'created_at', 'updated_at')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $activatedCccds,
+                'total' => $activatedCccds->count(),
+                'message' => 'Lấy danh sách CCCD đã kích hoạt thành công.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi lấy danh sách CCCD đã kích hoạt: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Lấy danh sách các CCCD đã được kích hoạt với phân trang
+     */
+    public function getActivatedCccdsPaginated(Request $request)
+    {
+        try {
+            $perPage = $request->input('per_page', 10); // Mặc định 10 bản ghi mỗi trang
+            $page = $request->input('page', 1);
+
+            $activatedCccds = XetDuyet::where('trang_thai', 'approved')
+                ->select('id', 'mssv_input', 'cccd_input', 'anh_cccd', 'ghi_chu', 'created_at', 'updated_at')
+                ->orderBy('updated_at', 'desc') // Sắp xếp theo thời gian cập nhật mới nhất
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'success' => true,
+                'data' => $activatedCccds->items(),
+                'pagination' => [
+                    'current_page' => $activatedCccds->currentPage(),
+                    'per_page' => $activatedCccds->perPage(),
+                    'total' => $activatedCccds->total(),
+                    'last_page' => $activatedCccds->lastPage(),
+                    'from' => $activatedCccds->firstItem(),
+                    'to' => $activatedCccds->lastItem(),
+                ],
+                'message' => 'Lấy danh sách CCCD đã kích hoạt thành công.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi lấy danh sách CCCD đã kích hoạt: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Tìm kiếm CCCD đã kích hoạt theo MSSV hoặc CCCD
+     */
+    public function searchActivatedCccds(Request $request)
+    {
+        try {
+            $searchTerm = $request->input('search', '');
+            $perPage = $request->input('per_page', 10);
+
+            $query = XetDuyet::where('trang_thai', 'approved')
+                ->select('id', 'mssv_input', 'cccd_input', 'anh_cccd', 'ghi_chu', 'created_at', 'updated_at');
+
+            if (!empty($searchTerm)) {
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('mssv_input', 'like', '%' . $searchTerm . '%')
+                      ->orWhere('cccd_input', 'like', '%' . $searchTerm . '%');
+                });
+            }
+
+            $activatedCccds = $query->orderBy('updated_at', 'desc')
+                ->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $activatedCccds->items(),
+                'pagination' => [
+                    'current_page' => $activatedCccds->currentPage(),
+                    'per_page' => $activatedCccds->perPage(),
+                    'total' => $activatedCccds->total(),
+                    'last_page' => $activatedCccds->lastPage(),
+                    'from' => $activatedCccds->firstItem(),
+                    'to' => $activatedCccds->lastItem(),
+                ],
+                'message' => 'Tìm kiếm CCCD đã kích hoạt thành công.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi tìm kiếm CCCD đã kích hoạt: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Lấy thông tin chi tiết của một CCCD đã kích hoạt
+     */
+    public function getActivatedCccdDetail($id)
+    {
+        try {
+            $activatedCccd = XetDuyet::where('trang_thai', 'approved')
+                ->where('id', $id)
+                ->select('id', 'mssv_input', 'cccd_input', 'anh_cccd', 'ghi_chu', 'created_at', 'updated_at')
+                ->first();
+
+            if (!$activatedCccd) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'CCCD đã kích hoạt không tồn tại.'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $activatedCccd,
+                'message' => 'Lấy thông tin chi tiết CCCD đã kích hoạt thành công.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi lấy thông tin chi tiết CCCD: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

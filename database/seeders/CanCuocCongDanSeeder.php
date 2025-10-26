@@ -89,6 +89,21 @@ class CanCuocCongDanSeeder extends Seeder
                 'ngay_het_han' => '2028-09-18',
                 'anh_cccd' => 'https://img.cand.com.vn/resize/800x800/NewFiles/Images/2024/02/16/6_tuoi_tro_len-1708097315445.png',
                 'trang_thai' => 'active'
+            ],
+            [
+                'so_cccd' => '079204008441',
+                'ho_ten' => 'Nguyễn Phước Long',
+                'ngay_sinh' => '2004-11-13',
+                'gioi_tinh' => 'Nam',
+                'quoc_tich' => 'Việt Nam',
+                'que_quan' => 'Ngọc Sơn, Thanh Chưong, Nghệ An',
+                'noi_thuong_tru' => '791/2A Ng.Xiển, Long Thạnh Mỹ, TP.Thủ Đức TP Hồ Chí Minh',
+                'ngay_cap' => '2021-03-10',
+                'noi_cap' => 'Cục Cảnh sát quản lý hành chính về trật tự xã hội - TP Hồ Chí Minh',
+                'dac_diem_nhan_dang' => 'Kính cận',
+                'ngay_het_han' => '2031-03-10',
+                'anh_cccd' => 'https://img.cand.com.vn/resize/800x800/NewFiles/Images/2024/02/16/6_tuoi_tro_len-1708097315445.png',
+                'trang_thai' => 'active'
             ]
         ];
 
