@@ -84,7 +84,7 @@ class CccdAuthController extends Controller
 
             return response()->json([
                 'status' => 'warning',
-                'message' => 'Không tìm thấy sinh viên trong DB',
+                'message' => 'Không tìm thấy sinh viên trong danh sách',
                 'ocr_data' => $ocrData,
                 'image_url' => $imageUrl
             ], 200);
