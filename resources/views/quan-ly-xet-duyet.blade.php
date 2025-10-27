@@ -815,7 +815,6 @@ document.getElementById('suaTaiKhoanBtn').onclick = () => {
 
 }
 
-
   // === Khi nhấn "Chấp nhận" ===
   approveBtn.addEventListener('click', function() {
     const currentAppId = this.getAttribute('data-app-id');
