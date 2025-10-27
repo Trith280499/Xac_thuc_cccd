@@ -823,17 +823,21 @@ document.getElementById('suaTaiKhoanBtn').onclick = () => {
 
 }
 
-
       // === Khi nhấn "Chấp nhận" ===
-      approveBtn.addEventListener('click', function() {
-        const currentAppId = this.getAttribute('data-app-id');
-        if (!currentAppId) return alert('Không xác định được bản ghi đang xét duyệt.');
+   approveBtn.addEventListener('click', function() {
+  const currentAppId = this.getAttribute('data-app-id');
+  if (!currentAppId) return alert('Không xác định được bản ghi đang xét duyệt.');
 
-        if (confirm('Bạn có chắc chắn muốn chấp nhận yêu cầu này?')) {
-          updateApplicationStatus(currentAppId, 'approved');
-          bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
-        }
-      });
+  if (confirm('Bạn có chắc chắn muốn chấp nhận yêu cầu này?')) {
+    // Lấy danh sách loại tài khoản đã chọn từ map
+    const selectedAccounts = selectedAccountsMap[currentAppId] || [];
+
+    // Gửi cả danh sách đó lên server
+    updateApplicationStatus(currentAppId, 'approved', '', selectedAccounts);
+
+    bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+  }
+});
 
       // === Khi nhấn "Từ chối" ===
       rejectBtn.addEventListener('click', function() {
@@ -1002,29 +1006,30 @@ document.getElementById('cancelBtn').addEventListener('click', function() {
       }
 
   // === Cập nhật trạng thái server ===
-  async function updateApplicationStatus(appId, status, reason = '') {
-    try {
-      const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-      const res = await fetch('/quan-ly-xet-duyet', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': token,
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ id: appId, status, reason })
-      });
-      const result = await res.json();
-      if (result.success) {
-        alert('Cập nhật thành công!');
-        loadApplications();
-      } else {
-        alert(result.message || 'Có lỗi khi cập nhật.');
-      }
-    } catch (err) {
-      alert('Lỗi khi cập nhật: ' + err.message);
+  async function updateApplicationStatus(appId, status, reason = '', accounts = []) {
+  try {
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const res = await fetch('/quan-ly-xet-duyet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': token,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ id: appId, status, reason, accounts }) //  gửi thêm danh sách tài khoản
+    });
+    const result = await res.json();
+    if (result.success) {
+      alert('Cập nhật thành công!');
+      loadApplications();
+    } else {
+      alert(result.message || 'Có lỗi khi cập nhật.');
     }
+  } catch (err) {
+    alert('Lỗi khi cập nhật: ' + err.message);
   }
+}
+
 });
 </script>
 </body>
