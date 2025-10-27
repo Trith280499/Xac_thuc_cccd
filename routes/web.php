@@ -5,7 +5,9 @@ use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\CccdAuthController;
 use App\Http\Controllers\CccdVerifyController;
 use App\Http\Controllers\LoaiTaiKhoanController;
+
 use Illuminate\Http\Request;
+
 
 Route::get('/', function () {
     return view('form1');

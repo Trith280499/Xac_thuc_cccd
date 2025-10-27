@@ -3,6 +3,9 @@ namespace App\Http\Controllers;
 
 use App\Models\XetDuyet;
 use App\Models\LoaiTaiKhoan;
+use App\Models\SinhVien;
+use App\Models\TaiKhoan;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Http;
@@ -46,22 +49,11 @@ class CccdVerifyController extends Controller
 public function getAllLoaiTK(Request $request)
 {
     try {
-        // 1️⃣ Kiểm tra xem session đã có chưa
-        $existingSession = session('mangLoaiTK');
-        if ($existingSession) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Dữ liệu loại tài khoản đã tồn tại trong session.',
-                'data' => $existingSession
-            ]);
-        }
-
-        // 2️⃣ Lấy danh sách loại tài khoản active bằng Eloquent
+        // Luôn truy vấn DB, không dùng session
         $activeAccounts = LoaiTaiKhoan::where('trang_thai', 'active')
             ->select('id', 'ten_loai', 'mo_ta', 'trang_thai')
             ->get();
 
-        // 3️⃣ Kiểm tra có dữ liệu không
         if ($activeAccounts->isEmpty()) {
             return response()->json([
                 'success' => false,
@@ -69,13 +61,10 @@ public function getAllLoaiTK(Request $request)
             ], 404);
         }
 
-        // 4️⃣ Lưu vào session để dùng sau (giống extracted_cccd)
-        Session::put('mangLoaiTK', $activeAccounts);
-
-        // 5️⃣ Trả về JSON phản hồi
+        //
         return response()->json([
             'success' => true,
-            'message' => 'Đã lấy danh sách loại tài khoản active và lưu vào session thành công.',
+            'message' => 'Lấy danh sách loại tài khoản thành công.',
             'data' => $activeAccounts
         ]);
     } catch (\Exception $e) {
@@ -85,6 +74,7 @@ public function getAllLoaiTK(Request $request)
         ], 500);
     }
 }
+
 
     private function safeParseDate($dateString)
     {
@@ -200,39 +190,60 @@ public function getAllLoaiTK(Request $request)
 
 
     // Cập nhật trạng thái xét duyệt
-    public function updateApprovalStatus(Request $request)
-    {
-        try {
-            $id = $request->input('id');
-            $newStatus = $request->input('status');
-            $reason = $request->input('reason', '');
+   public function updateApprovalStatus(Request $request)
+{
+    try {
+        $id = $request->input('id');
+        $newStatus = $request->input('status');
+        $reason = $request->input('reason', '');
+        $accounts = $request->input('accounts', []); // ✅ mảng tài khoản từ UI
 
-            $approval = XetDuyet::find($id);
-            if (!$approval) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Yêu cầu xét duyệt không tồn tại.'
-                ], 404);
-            }
-
-            $approval->trang_thai = $newStatus;
-            if ($newStatus === 'rejected') {
-                $approval->ghi_chu = $reason;
-            } else {
-                $approval->ghi_chu = '';
-            }
-            $approval->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Cập nhật trạng thái xét duyệt thành công.'
-            ]);
-
-        } catch (\Exception $e) {
+        $approval = XetDuyet::find($id);
+        if (!$approval) {
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi khi cập nhật trạng thái: ' . $e->getMessage()
-            ], 500);
+                'message' => 'Yêu cầu xét duyệt không tồn tại.'
+            ], 404);
         }
+
+        // ✅ Lấy sinh viên_id tương ứng từ mssv_input
+        $student = SinhVien::where('mssv', $approval->mssv_input)->first();
+        if (!$student) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy sinh viên có MSSV: ' . $approval->mssv_input
+            ], 404);
+        }
+
+        // ✅ Nếu trạng thái là approved → lưu vào bảng tai_khoan
+        if ($newStatus === 'approved' && !empty($accounts)) {
+            foreach ($accounts as $acc) {
+                TaiKhoan::create([
+                    'ten_tai_khoan' => $acc['ten_tai_khoan'],
+                    'loai_tai_khoan_id' => $acc['id'],
+                    'sinh_vien_id' => $student->id,
+                    'ngay_reset' => null,
+                    'trang_thai' => 'active'
+                ]);
+            }
+        }
+
+        // ✅ Cập nhật trạng thái xét duyệt
+        $approval->trang_thai = $newStatus;
+        $approval->ghi_chu = $newStatus === 'rejected' ? $reason : '';
+        $approval->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật trạng thái xét duyệt thành công.'
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Lỗi khi cập nhật trạng thái: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 }
