@@ -20,20 +20,6 @@ class XetDuyet extends Model
         'anh_cccd',
         'ghi_chu',
 
-        // ====== Thông tin CCCD tạm thời ======
-        'so_cccd',
-        'ho_ten',
-        'ngay_sinh',
-        'gioi_tinh',
-        'quoc_tich',
-        'que_quan',
-        'noi_thuong_tru',
-        'ngay_cap',
-        'noi_cap',
-        'dac_diem_nhan_dang',
-        'ngay_het_han',
-        'anh_cccd_moi',
-        'trang_thai_cccd',
     ];
 
     /**
@@ -42,14 +28,6 @@ class XetDuyet extends Model
     public function sinhVien(): BelongsTo
     {
         return $this->belongsTo(SinhVien::class, 'mssv_input', 'mssv');
-    }
-
-    /**
-     * Relationship với CanCuocCongDan (qua cccd)
-     */
-    public function canCuocCongDan(): BelongsTo
-    {
-        return $this->belongsTo(CanCuocCongDan::class, 'cccd_input', 'so_cccd');
     }
 
     /**

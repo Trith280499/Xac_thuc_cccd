@@ -23,11 +23,4 @@ class LichSuReset extends Model
         'thoi_gian_reset' => 'datetime'
     ];
 
-    /**
-     * Relationship với CanCuocCongDan
-     */
-    public function canCuocCongDan()
-    {
-        return $this->belongsTo(CanCuocCongDan::class, 'so_cccd', 'so_cccd');
-    }
 }
