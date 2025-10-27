@@ -8,11 +8,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\SinhVien;
-use App\Models\CanCuocCongDan;
 use App\Models\User;
 use App\Models\TaiKhoan;
-use App\Models\LoaiTaiKhoan;
-use App\Models\XetDuyet;
 
 class CccdAuthController extends Controller
 {
@@ -75,7 +72,7 @@ class CccdAuthController extends Controller
             $cccdText = $ocrData['id'];
 
             // Query database với cấu trúc mới
-            $student = SinhVien::with(['canCuocCongDan', 'taiKhoans.loaiTaiKhoan'])
+            $student = SinhVien::with(['taiKhoans.loaiTaiKhoan'])
                 ->where('so_cccd', $cccdText)
                 ->first();
 
@@ -83,17 +80,6 @@ class CccdAuthController extends Controller
             session([
                 'cccd_authenticated' => false, // chưa xác thực sinh viên
                 'cccd_number' => $cccdText,
-                'extracted_cccd' => [
-                    'so_cccd'        => $ocrData['id'] ?? null,
-                    'ho_ten'         => $ocrData['full_name'] ?? null,
-                    'ngay_sinh'      => $ocrData['date_of_birth'] ?? null,
-                    'gioi_tinh'      => $ocrData['sex'] ?? null,
-                    'quoc_tich'      => $ocrData['nationality'] ?? null,
-                    'que_quan'       => $ocrData['place_of_origin'] ?? null,
-                    'noi_thuong_tru' => $ocrData['place_of_residence'] ?? null,
-                    'ngay_het_han'   => $ocrData['date_of_expiry'] ?? null,
-                    'anh_cccd'       => $imageUrl ?? null,
-                ],
             ]);
 
             return response()->json([
@@ -105,12 +91,10 @@ class CccdAuthController extends Controller
         }
 
             // Cập nhật ảnh CCCD
-            if ($student->canCuocCongDan) {
-                $student->canCuocCongDan->update([
-                    'anh_cccd' => $imageUrl,
-                    'updated_at' => now()
-                ]);
-            }
+            $student->update([
+                'anh_cccd' => $imageUrl,
+                'updated_at' => now()
+            ]);
 
             // Lấy thông tin tài khoản theo loại
             $taiKhoans = $student->taiKhoans;
@@ -128,7 +112,6 @@ class CccdAuthController extends Controller
                 'student_data' => [
                     'sv' => $student,
                     'user' => $user,
-                    'cccdData' => $student->canCuocCongDan,
                     'eduAccounts' => $eduAccounts,
                     'vleAccounts' => $vleAccounts,
                     'msteamAccounts' => $msteamAccounts,
@@ -247,7 +230,7 @@ class CccdAuthController extends Controller
             $cccd = $request->input('cccd');
 
             // Tìm sinh viên theo MSSV và CCCD
-            $student = SinhVien::with(['canCuocCongDan', 'taiKhoans.loaiTaiKhoan'])
+            $student = SinhVien::with(['taiKhoans.loaiTaiKhoan'])
                 ->where('mssv', $mssv)
                 ->where('so_cccd', $cccd)
                 ->first();
@@ -275,11 +258,10 @@ class CccdAuthController extends Controller
                 'student_data' => [
                     'sv' => $student,
                     'user' => $user,
-                    'cccdData' => $student->canCuocCongDan,
                     'eduAccounts' => $eduAccounts,
                     'vleAccounts' => $vleAccounts,
                     'msteamAccounts' => $msteamAccounts,
-                    'image_url' => $student->canCuocCongDan->anh_cccd ?? null,
+                    'image_url' => $student->anh_cccd ?? null,
                     'manual_approval' => true
                 ]
             ]);

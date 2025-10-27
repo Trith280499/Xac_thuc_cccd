@@ -22,11 +22,6 @@ return new class extends Migration
             $table->index('so_cccd');
         });
 
-        // Tạo khóa ngoại sau khi đã tạo bảng can_cuoc_cong_dan
-        Schema::table('users', function (Blueprint $table) {
-            $table->foreign('so_cccd')->references('so_cccd')->on('can_cuoc_cong_dan');
-        });
-
         // Giữ nguyên các bảng mặc định của Laravel
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

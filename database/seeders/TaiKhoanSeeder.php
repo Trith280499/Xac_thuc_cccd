@@ -26,11 +26,10 @@ class TaiKhoanSeeder extends Seeder
         // Tạo tài khoản VLE cho mỗi sinh viên
         foreach ($sinhViens as $index => $sinhVien) {
             $taiKhoanData[] = [
-                'ten_tai_khoan' => 'SV' . str_pad($index + 1, 3, '0', STR_PAD_LEFT) . '.vle',
+                'ten_tai_khoan' => $sinhVien->mssv, 
                 'loai_tai_khoan_id' => $loaiVLE->id,
                 'sinh_vien_id' => $sinhVien->id,
-                'mat_khau' => 'password123',
-                'ngay_reset' => '2024-01-' . (15 + $index),
+                'ngay_reset' => Carbon::now()->addDays($index),
                 'trang_thai' => 'active'
             ];
         }
@@ -38,11 +37,10 @@ class TaiKhoanSeeder extends Seeder
         // Tạo tài khoản EDU cho mỗi sinh viên
         foreach ($sinhViens as $index => $sinhVien) {
             $taiKhoanData[] = [
-                'ten_tai_khoan' => 'SV' . str_pad($index + 1, 3, '0', STR_PAD_LEFT) . '@edu.com',
+                'ten_tai_khoan' => $sinhVien->mssv . '@edu', 
                 'loai_tai_khoan_id' => $loaiEDU->id,
                 'sinh_vien_id' => $sinhVien->id,
-                'mat_khau' => 'edu123',
-                'ngay_reset' => '2024-02-' . (15 + $index),
+                'ngay_reset' => Carbon::now()->addDays($index),
                 'trang_thai' => 'active'
             ];
         }
@@ -50,11 +48,10 @@ class TaiKhoanSeeder extends Seeder
         // Tạo tài khoản MS Teams cho mỗi sinh viên
         foreach ($sinhViens as $index => $sinhVien) {
             $taiKhoanData[] = [
-                'ten_tai_khoan' => 'SV' . str_pad($index + 1, 3, '0', STR_PAD_LEFT) . '@msteam.com',
+                'ten_tai_khoan' => $sinhVien->mssv . '@team', 
                 'loai_tai_khoan_id' => $loaiMSTeam->id,
                 'sinh_vien_id' => $sinhVien->id,
-                'mat_khau' => 'team123',
-                'ngay_reset' => '2024-03-' . (15 + $index),
+                'ngay_reset' => Carbon::now()->addDays($index),
                 'trang_thai' => 'active'
             ];
         }

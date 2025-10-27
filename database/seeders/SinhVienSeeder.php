@@ -14,22 +14,17 @@ class SinhVienSeeder extends Seeder
             [
                 'mssv' => '48.01.104.030',
                 'so_cccd' => '079204021537',
+                'anh_cccd' => 'https://0711.vn/storage/uploads/img2022071309455272424000.jpg',
             ],
             [
                 'mssv' => '20240002',
                 'so_cccd' => '001123456788',
+                'anh_cccd' => 'https://0711.vn/storage/uploads/img2022071309455272424000.jpg',
             ],
             [
                 'mssv' => '20240003',
                 'so_cccd' => '001123456787',
-            ],
-            [
-                'mssv' => '20240004',
-                'so_cccd' => '001123456786',
-            ],
-            [
-                'mssv' => '20240005',
-                'so_cccd' => '001123456785',
+                'anh_cccd' => 'https://0711.vn/storage/uploads/img2022071309455272424000.jpg',
             ]
         ];
 

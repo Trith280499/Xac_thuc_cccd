@@ -13,10 +13,8 @@ return new class extends Migration
             $table->string('mssv')->unique();
             $table->string('so_cccd');
             $table->string('trang_thai')->default('active');
+            $table->string('anh_cccd')->nullable();
             $table->timestamps();
-
-            // Khóa ngoại đến bảng căn cước công dân
-            $table->foreign('so_cccd')->references('so_cccd')->on('can_cuoc_cong_dan');
         });
     }
 

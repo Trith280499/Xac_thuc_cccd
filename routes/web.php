@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ResetPassController;
 use App\Http\Controllers\CccdAuthController;
 use App\Http\Controllers\CccdVerifyController;
+use App\Http\Controllers\LoaiTaiKhoanController;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
@@ -75,18 +76,23 @@ Route::prefix('quan-ly-xet-duyet')->group(function() {
 });
 
 //Form quản lý kích hoạt
-Route::prefix('quan-ly-kich-hoat')->group(function() {
+Route::prefix('quan-ly-loai-tai-khoan')->group(function() {
     Route::get('/view', function () {
-        return view('quan-ly-kich-hoat');
-    })->name('quan-ly-kich-hoat.form');
+        return view('quan-ly-loai-tai-khoan');
+    })->name('quan-ly-loai-tai-khoan.form');
 
     Route::get('/', function () {
-        return view('quan-ly-kich-hoat');
-    })->name('quan-ly-kich-hoat');
+        return view('quan-ly-loai-tai-khoan');
+    })->name('quan-ly-loai-tai-khoan');
     
     // Route API để lấy dữ liệu
-    Route::get('/api/danh-sach', [CccdVerifyController::class, 'getActivatedCccds']);
-    // Route::get('/', [CccdVerifyController::class, 'getActivatedCccds'])->name('quan-ly-kich-hoat');
+    Route::get('/api/danh-sach', [LoaiTaiKhoanController::class, 'index'])->name('quan-ly-loai-tai-khoan.api');
+    Route::post('/api/them-moi', [LoaiTaiKhoanController::class, 'store'])->name('quan-ly-loai-tai-khoan.store');
+    Route::put('/api/cap-nhat/{id}', [LoaiTaiKhoanController::class, 'update'])->name('quan-ly-loai-tai-khoan.update');
+    Route::delete('/api/xoa/{id}', [LoaiTaiKhoanController::class, 'destroy'])->name('quan-ly-loai-tai-khoan.destroy');
+    Route::get('/api/chi-tiet/{id}', [LoaiTaiKhoanController::class, 'show'])->name('quan-ly-loai-tai-khoan.show');
+    
+    // Route::get('/', [CccdVerifyController::class, 'getActivatedCccds'])->name('quan-ly-loai-tai-khoan');
 });
 
 

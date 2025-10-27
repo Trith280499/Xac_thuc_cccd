@@ -157,7 +157,6 @@ class ResetPassController extends Controller
         try {
             // Cập nhật mật khẩu trong bảng tai_khoan
             $taiKhoan->update([
-                'mat_khau' => $newPassword,
                 'ngay_reset' => now(),
                 'updated_at' => now()
             ]);
@@ -255,7 +254,6 @@ class ResetPassController extends Controller
             try {
                 // Cập nhật mật khẩu
                 $taiKhoan->update([
-                    'mat_khau' => $newPassword,
                     'ngay_reset' => now(),
                     'updated_at' => now()
                 ]);
