@@ -127,16 +127,6 @@ public function getAllLoaiTK(Request $request)
                 ], 400);
             }
 
-            //  Lấy dữ liệu OCR đã lưu trong session
-            $sessionData = session('extracted_cccd');
-
-            if (!$sessionData) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy dữ liệu CCCD trong session. Vui lòng xác thực lại.'
-                ], 400);
-            }
-
             // Tạo bản ghi xét duyệt mới từ thông tin session
             XetDuyet::create([
                 'mssv_input'          => $mssv,
@@ -144,22 +134,7 @@ public function getAllLoaiTK(Request $request)
                 'trang_thai'          => 'pending',
                 'anh_cccd'            => $imageUrl ?? $sessionData['anh_cccd'] ?? null,
                 'ghi_chu'             =>null,
-
-                // Dữ liệu CCCD trích xuất (theo migration)
-                'so_cccd'             => $sessionData['so_cccd'] ?? null,
-                'ho_ten'              => $sessionData['ho_ten'] ?? null,
-                'ngay_sinh'     => $this->safeParseDate($sessionData['ngay_sinh'] ?? null),
-
-                'gioi_tinh'           => $sessionData['gioi_tinh'] ?? null,
-                'quoc_tich'           => $sessionData['quoc_tich'] ?? 'Việt Nam',
-                'que_quan'            => $sessionData['que_quan'] ?? null,
-                'noi_thuong_tru'      => $sessionData['noi_thuong_tru'] ?? null,
-                'ngay_het_han'  => $this->safeParseDate($sessionData['ngay_het_han'] ?? null),
-                'trang_thai_cccd'     => 'active',
             ]);
-
-            // Xóa session sau khi lưu để tránh duplicate
-            session()->forget('extracted_cccd');
 
             return response()->json([
                 'success' => true,
