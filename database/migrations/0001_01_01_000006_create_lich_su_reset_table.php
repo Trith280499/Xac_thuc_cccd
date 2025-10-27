@@ -22,10 +22,6 @@ return new class extends Migration
             
         });
 
-        // Tạo khóa ngoại sau khi đã tạo bảng can_cuoc_cong_dan
-        Schema::table('lich_su_reset', function (Blueprint $table) {
-            $table->foreign('so_cccd')->references('so_cccd')->on('can_cuoc_cong_dan');
-        });
     }
 
     public function down()

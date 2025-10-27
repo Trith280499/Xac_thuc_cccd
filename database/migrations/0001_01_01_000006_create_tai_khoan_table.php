@@ -13,7 +13,6 @@ return new class extends Migration
             $table->string('ten_tai_khoan');
             $table->foreignId('loai_tai_khoan_id')->constrained('loai_tai_khoan');
             $table->foreignId('sinh_vien_id')->constrained('sinh_vien');
-            $table->string('mat_khau');
             $table->date('ngay_reset')->nullable();
             $table->string('trang_thai')->default('active');
             $table->timestamps();
