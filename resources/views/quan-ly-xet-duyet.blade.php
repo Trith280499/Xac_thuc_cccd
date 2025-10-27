@@ -466,323 +466,406 @@
               <div class="form-text">Ghi chú này sẽ được lưu lại trong lịch sử xét duyệt</div>
             </div>
           </div>
+          <div class="mt-4" id="loaiTaiKhoanSection" style="display:none;">
+          <h6 class="text-primary"><i class="fas fa-user-cog me-2"></i>Các loại tài khoản được xét duyệt</h6>
+          <div id="loaiTaiKhoanList" class="p-2 border rounded bg-light">
+            <p class="text-muted mb-0">Chưa có loại tài khoản nào được chọn.</p>
+          </div>
+          <div class="mt-3 text-end">
+            <button class="btn btn-outline-primary btn-sm" id="suaTaiKhoanBtn">
+              <i class="fas fa-edit me-1"></i> Sửa danh sách
+            </button>
+          </div>
+  </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-light" id="cancelBtn" data-bs-dismiss="modal">Đóng</button>
           <button type="button" class="btn btn-danger btn-reject" id="rejectBtn">
             <i class="fas fa-times me-1"></i> Từ chối
           </button>
-          <button type="button" class="btn btn-success btn-approve" id="approveBtn">
+          <button type="button" class="btn btn-primary btn-add" id="addTaiKhoanBtn">
+            <i class="fas fa-plus me-1"></i> Thêm tài khoản
+          </button>
+          <button type="button" class="btn btn-success btn-approve" id="approveBtn" style="display:none;">
             <i class="fas fa-check me-1"></i> Chấp nhận
           </button>
         </div>
       </div>
+      <!-- Modal chọn loại tài khoản -->
+    <div class="modal fade" id="loaiTkModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered"> <!-- căn dọc -->
+        <div class="modal-content p-3 shadow-lg">
+          <div class="modal-header">
+            <h5 class="modal-title">Xét duyệt các tài khoản cho sinh viên</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Chọn tất cả -->
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
+              <label class="form-check-label fw-semibold" for="selectAllCheckbox">
+                Chọn tất cả
+              </label>
+            </div>
+            
+            <!-- Danh sách checkbox loại tài khoản -->
+            <div id="checkboxContainer" class="mb-2" style="max-height: 300px; overflow-y: auto;"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="button" class="btn btn-success" id="confirmLoaiTkBtn">
+              <i class="fas fa-check me-1"></i> Xác nhận
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+    </div>
+</div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const applicationsList = document.getElementById('applicationsList');
-      const filterBtns = document.querySelectorAll('.filter-btn');
-      const searchInput = document.getElementById('searchInput');
-      const refreshBtn = document.getElementById('refreshBtn');
-      const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
-      
-      let currentFilter = 'all';
-      let currentApplications = [];
-      let filteredApplications = [];
-      
-      // Initialize the UI
-      loadApplications();
-      
-      // Filter buttons event listeners
-      filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-          filterBtns.forEach(b => b.classList.remove('active'));
-          this.classList.add('active');
-          currentFilter = this.getAttribute('data-filter');
-          filterApplications();
-        });
-      });
-      
-      // Search input event listener
-      searchInput.addEventListener('input', function() {
-        filterApplications();
-      });
-      
-      // Refresh button event listener
-      refreshBtn.addEventListener('click', function() {
-        loadApplications();
-      });
-      
-      // Approve button event listener
-      document.getElementById('approveBtn').addEventListener('click', function() {
-        const currentAppId = this.getAttribute('data-app-id');
-        if (currentAppId && confirm('Bạn có chắc chắn muốn chấp nhận yêu cầu này?')) {
-          updateApplicationStatus(currentAppId, 'approved');
-          detailModal.hide();
-        }
-      });
-      
-      // Reject button event listener
-      document.getElementById('rejectBtn').addEventListener('click', function() {
-        const currentAppId = this.getAttribute('data-app-id');
-        const rejectReason = document.getElementById('rejectReason').value.trim();
-        
-        if (!currentAppId) return;
-        
-        if (!rejectReason) {
-          alert('Vui lòng nhập lý do từ chối');
-          return;
-        }
-        
-        if (confirm('Bạn có chắc chắn muốn từ chối yêu cầu này?')) {
-          updateApplicationStatus(currentAppId, 'rejected', rejectReason);
-          detailModal.hide();
-        }
-      });
-      
-      // Load applications from API
-      async function loadApplications() {
-        try {
-          applicationsList.innerHTML = `
-            <div class="loading-spinner">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Đang tải...</span>
-              </div>
-              <span class="ms-2">Đang tải dữ liệu...</span>
-            </div>
-          `;
-          
-          // Gọi API GET để lấy danh sách yêu cầu xét duyệt
-          const response = await fetch('/quan-ly-xet-duyet');
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const data = await response.json();
-          
-          currentApplications = data.applications || data || [];
-          filterApplications();
-          
-        } catch (error) {
-          console.error('Error loading applications:', error); 
-          applicationsList.innerHTML = `
-            <div class="text-center py-4">
-              <i class="fas fa-exclamation-triangle fa-2x text-danger mb-3"></i>
-              <h5 class="text-danger">Lỗi khi tải dữ liệu</h5>
-              <p class="text-muted">Vui lòng thử lại sau</p>
-              <button class="btn btn-primary" onclick="loadApplications()">Thử lại</button>
-            </div>
-          `;
-        }
+document.addEventListener('DOMContentLoaded', function() {
+  const applicationsList = document.getElementById('applicationsList');
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const searchInput = document.getElementById('searchInput');
+  const refreshBtn = document.getElementById('refreshBtn');
+  const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+  
+  let currentFilter = 'all';
+  let currentApplications = [];
+  let filteredApplications = [];
+  const selectedAccountsMap = {}; // mỗi xét duyệt có danh sách loại TK riêng
+
+  // === Elements trong modal ===
+  const addTaiKhoanBtn = document.getElementById('addTaiKhoanBtn');
+  const approveBtn = document.getElementById('approveBtn');
+  const rejectBtn = document.getElementById('rejectBtn');
+  const loaiTkModal = new bootstrap.Modal(document.getElementById('loaiTkModal'));
+  const confirmLoaiTkBtn = document.getElementById('confirmLoaiTkBtn');
+  const checkboxContainer = document.getElementById('checkboxContainer');
+  const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+  const loaiTaiKhoanSection = document.getElementById('loaiTaiKhoanSection');
+  const loaiTaiKhoanList = document.getElementById('loaiTaiKhoanList');
+
+  // === INIT ===
+  loadApplications();
+
+  // === Bộ lọc và tìm kiếm ===
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      currentFilter = this.getAttribute('data-filter');
+      filterApplications();
+    });
+  });
+  searchInput.addEventListener('input', filterApplications);
+  refreshBtn.addEventListener('click', loadApplications);
+
+  // === Khi ấn "Thêm tài khoản" ===
+  addTaiKhoanBtn.addEventListener('click', async function() {
+    const currentAppId = this.getAttribute('data-app-id');
+    if (!currentAppId) return alert('Không xác định được bản ghi đang xét duyệt.');
+
+    try {
+      const res = await fetch('/quan-ly-xet-duyet/getAllLoaiTK');
+      const result = await res.json();
+      if (!result.success) {
+        alert(result.message || 'Không thể tải danh sách loại tài khoản.');
+        return;
       }
-      
-      // Filter applications based on current filter and search
-      function filterApplications() {
-        const searchTerm = searchInput.value.toLowerCase();
-        
-        filteredApplications = currentApplications.filter(app => {
-          const matchesFilter = currentFilter === 'all' || app.trang_thai === currentFilter;
-          const matchesSearch = !searchTerm || 
-            (app.mssv_input && app.mssv_input.toLowerCase().includes(searchTerm)) || 
-            (app.cccd_input && app.cccd_input.toLowerCase().includes(searchTerm)) ||
-            (app.ho_ten && app.ho_ten.toLowerCase().includes(searchTerm));
-          
-          return matchesFilter && matchesSearch;
-        });
-        
-        renderApplications();
-        updateStatistics();
-      }
-      
-      // Render applications list
-      function renderApplications() {
-        if (filteredApplications.length === 0) {
-          applicationsList.innerHTML = `
-            <div class="text-center py-5">
-              <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-              <h5 class="text-muted">Không có yêu cầu nào</h5>
-              <p class="text-muted">Không tìm thấy yêu cầu phù hợp với bộ lọc</p>
-            </div>
-          `;
-          return;
-        }
-        
-        let applicationsHTML = '';
-        
-        filteredApplications.forEach(app => {
-          const statusClass = `status-${app.trang_thai}`;
-          let statusText = '';
-          
-          switch(app.trang_thai) {
-            case 'pending': statusText = 'Chờ duyệt'; break;
-            case 'approved': statusText = 'Đã duyệt'; break;
-            case 'rejected': statusText = 'Từ chối'; break;
-            default: statusText = 'Chờ duyệt';
-          }
-          
-          // Xử lý hiển thị tên - sử dụng họ tên nếu có, nếu không dùng MSSV
-          const displayName = app.ho_ten || `${app.mssv_input}`;
-          const firstLetter = displayName.charAt(0).toUpperCase();
-          const submitTime = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : 'Chưa có thông tin';
-          
-          applicationsHTML += `
-            <div class="application-item">
-              <div class="application-info">
-                <div class="d-flex flex-wrap align-items-center justify-content-between mb-1">
-                  <h6 class="fw-bold mb-0 me-2">${displayName}</h6>
-                  <span class="status-badge ${statusClass}">${statusText}</span>
-                </div>
-                <div class="d-flex flex-wrap text-muted">
-                  <span class="me-3"><small>MSSV: ${app.mssv_input || 'Chưa có'}</small></span>
-                  <span class="me-3"><small>CCCD: ${app.cccd_input || 'Chưa có'}</small></span>
-                  <span><small>${submitTime}</small></span>
-                </div>
-              </div>
-              <div class="application-actions">
-                <button class="btn btn-sm btn-outline-primary view-detail" data-id="${app.id}">
-                  <i class="fas fa-eye me-1"></i> Chi tiết
-                </button>
-              </div>
-            </div>
-          `;
-        });
-        
-        applicationsList.innerHTML = applicationsHTML;
-        
-        // Add event listeners to detail buttons
-        document.querySelectorAll('.view-detail').forEach(btn => {
-          btn.addEventListener('click', function() {
-            const appId = this.getAttribute('data-id');
-            showApplicationDetail(appId);
-          });
-        });
-        
-        // Update counts
-        document.getElementById('showingCount').textContent = filteredApplications.length;
-        document.getElementById('totalItems').textContent = currentApplications.length;
-      }
-      
-      // Show application details in modal
-  function showApplicationDetail(appId) {
-  const app = currentApplications.find(a => a.id == appId);
-  if (!app) {
-    alert("Không tìm thấy dữ liệu chi tiết!");
-    return;
-  }
 
-  // 🔹 Thông tin chung
-  document.getElementById('detailMssv').textContent = app.mssv_input || '-';
-  document.getElementById('detailCccd').textContent = app.cccd_input || '-';
-  document.getElementById('detailSubmitTime').textContent = app.created_at 
-    ? new Date(app.created_at).toLocaleString('vi-VN') 
-    : '-';
-  document.getElementById('detailUpdateTime').textContent = app.updated_at 
-    ? new Date(app.updated_at).toLocaleString('vi-VN') 
-    : '-';
+      renderLoaiTaiKhoanCheckbox(result.data, currentAppId);
+      loaiTkModal.show();
+    } catch (err) {
+      console.error('Lỗi khi gọi API getAllLoaiTK:', err);
+      alert('Đã xảy ra lỗi khi tải danh sách loại tài khoản.');
+    }
+  });
 
-  // 🔹 Trạng thái
-  const statusBadge = document.getElementById('detailStatusBadge');
-  statusBadge.className = `status-badge status-${app.trang_thai}`;
-  switch (app.trang_thai) {
-    case 'pending': statusBadge.textContent = 'Đang chờ'; break;
-    case 'approved': statusBadge.textContent = 'Đã duyệt'; break;
-    case 'rejected': statusBadge.textContent = 'Đã từ chối'; break;
-    default: statusBadge.textContent = 'Không xác định';
-  }
+  // === Hiển thị checkbox trong modal nhỏ ===
+ function renderLoaiTaiKhoanCheckbox(data, appId) {
+  checkboxContainer.innerHTML = '';
+  data.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'form-check mb-2';
+    div.innerHTML = `
+      <input class="form-check-input loai-tk-item" type="checkbox" value="${item.id}" id="tk_${item.id}" 
+            data-name="${item.ten_loai}" data-desc="${item.mo_ta || ''}">
+      <label class="form-check-label" for="tk_${item.id}">
+        <strong>${item.ten_loai}</strong> - ${item.mo_ta || ''}
+      </label>
+    `;
+    checkboxContainer.appendChild(div);
+  });
 
-  // 🔹 Thông tin CCCD (toàn bộ lấy trực tiếp từ app)
-  document.getElementById('detailName').textContent = app.ho_ten || '-';
-  document.getElementById('detailDob').textContent = app.ngay_sinh || '-';
-  document.getElementById('detailGender').textContent = app.gioi_tinh || '-';
-  document.getElementById('detailHometown').textContent = app.que_quan || '-';
-  document.getElementById('detailAddress').textContent = app.noi_thuong_tru || '-';
-  document.getElementById('detailIssueDate').textContent = app.ngay_cap || '-';
-  document.getElementById('detailIssuePlace').textContent = app.noi_cap || '-';
+  // Nếu app này đã có lựa chọn trước, tick lại
+  const previous = selectedAccountsMap[appId] || [];
+  previous.forEach(acc => {
+    const chk = document.getElementById(`tk_${acc.id}`);
+    if (chk) chk.checked = true;
+  });
 
-  // 🔹 Hình ảnh CCCD
-  document.getElementById('detailFrontImage').src = 
-    app.anh_cccd_moi || app.anh_cccd || '/storage/cccd_images/default.jpg';
+  // === Logic chọn tất cả thông minh ===
+  const allChecks = checkboxContainer.querySelectorAll('.loai-tk-item');
 
-  // 🔹 Lịch sử & ghi chú
-  document.getElementById('detailCurrentNote').textContent = app.ghi_chu || '-';
-  document.getElementById('rejectReason').value = '';
+  // Khi click vào "Chọn tất cả"
+  selectAllCheckbox.checked = allChecks.length > 0 && [...allChecks].every(chk => chk.checked);
+  selectAllCheckbox.onchange = function () {
+    allChecks.forEach(chk => (chk.checked = this.checked));
+  };
 
-  // 🔹 Gán ID cho nút hành động
-  document.getElementById('approveBtn').setAttribute('data-app-id', app.id);
-  document.getElementById('rejectBtn').setAttribute('data-app-id', app.id);
+  // Khi click vào từng checkbox con
+  allChecks.forEach(chk => {
+    chk.addEventListener('change', () => {
+      const total = allChecks.length;
+      const checkedCount = [...allChecks].filter(c => c.checked).length;
 
-  // 🔹 Hiển thị hoặc ẩn nút tùy theo trạng thái
-  if (app.trang_thai === 'pending') {
-    document.getElementById('approveBtn').style.display = 'inline-block';
-    document.getElementById('rejectBtn').style.display = 'inline-block';
-    document.getElementById('rejectReason').disabled = false;
-  } else {
-    document.getElementById('approveBtn').style.display = 'none';
-    document.getElementById('rejectBtn').style.display = 'none';
-    document.getElementById('rejectReason').disabled = true;
-  }
-
-  // 🔹 Mở modal
-  detailModal.show();
-}
-
-      // Update application status
-      async function updateApplicationStatus(appId, status, reason = '') {
-        try {
-          const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-          
-          const response = await fetch('/quan-ly-xet-duyet', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': token,
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              id: appId,
-              status: status,
-              reason: reason
-            })
-          });
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          
-          const result = await response.json();
-          
-          if (result.success) {
-            if(status === 'approved') {
-              alert('Cập nhật trạng thái thành công!');
-              window.location.href = '/quan-ly-loai-tai-khoan';
-            }
-          } else {
-            // Reload applications to get updated data
-            loadApplications();
-            alert('Có lỗi xảy ra: ' + (result.message || 'Không xác định'));
-          }
-        } catch (error) {
-          console.error('Error updating application status:', error);
-          alert('Lỗi khi cập nhật trạng thái: ' + error.message);
-        }
-      }
-      
-      // Update statistics
-      function updateStatistics() {
-        const total = currentApplications.length;
-        const pending = currentApplications.filter(app => app.trang_thai === 'pending').length;
-        const approved = currentApplications.filter(app => app.trang_thai === 'approved').length;
-        const rejected = currentApplications.filter(app => app.trang_thai === 'rejected').length;
-        
-        document.getElementById('totalCount').textContent = total;
-        document.getElementById('pendingCount').textContent = pending;
-        document.getElementById('approvedCount').textContent = approved;
-        document.getElementById('rejectedCount').textContent = rejected;
+      if (checkedCount === total) {
+        selectAllCheckbox.checked = true; // nếu chọn hết thì tick “Chọn tất cả”
+      } else {
+        selectAllCheckbox.checked = false; // nếu bỏ bất kỳ thì bỏ tick “Chọn tất cả”
       }
     });
-  </script>
+  });
+}
+
+
+  // === Khi xác nhận trong modal nhỏ ===
+  confirmLoaiTkBtn.addEventListener('click', function() {
+    const currentAppId = addTaiKhoanBtn.getAttribute('data-app-id');
+    const checkedBoxes = checkboxContainer.querySelectorAll('input[type="checkbox"]:checked');
+
+    if (checkedBoxes.length === 0) {
+      loaiTkModal.hide();
+      selectedAccountsMap[currentAppId] = [];
+      renderSelectedLoaiTaiKhoan([], currentAppId);
+      addTaiKhoanBtn.style.display = 'inline-block';
+      approveBtn.style.display = 'none';
+      return;
+    }
+
+    // ✅ Lưu danh sách đã chọn riêng cho app này
+    selectedAccountsMap[currentAppId] = Array.from(checkedBoxes).map(cb => ({
+      id: cb.value,
+      ten_loai: cb.dataset.name,
+      mo_ta: cb.dataset.desc
+    }));
+
+    loaiTkModal.hide();
+    renderSelectedLoaiTaiKhoan(selectedAccountsMap[currentAppId], currentAppId);
+    addTaiKhoanBtn.style.display = 'none';
+    approveBtn.style.display = 'inline-block';
+  });
+
+  // === Hiển thị danh sách loại tài khoản đã chọn ===
+  function renderSelectedLoaiTaiKhoan(list, appId) {
+    if (!list || list.length === 0) {
+      loaiTaiKhoanSection.style.display = 'none';
+      loaiTaiKhoanList.innerHTML = `<p class="text-muted mb-0">Chưa có loại tài khoản nào được chọn.</p>`;
+      return;
+    }
+
+    loaiTaiKhoanSection.style.display = 'block';
+    loaiTaiKhoanList.innerHTML = list.map(item => `
+      <div class="border-bottom py-1">
+        <strong>${item.ten_loai}</strong>
+        <small class="text-muted"> - ${item.mo_ta || 'Không có mô tả'}</small>
+      </div>
+    `).join('');
+
+    // Nút sửa và xóa danh sách
+    document.getElementById('suaTaiKhoanBtn').onclick = () => {
+      loaiTkModal.show();
+      setTimeout(() => {
+        const all = checkboxContainer.querySelectorAll('.loai-tk-item');
+        all.forEach(chk => {
+          chk.checked = list.some(acc => acc.id == chk.value);
+        });
+      }, 100);
+    };
+  }
+
+  // === Khi nhấn "Chấp nhận" ===
+  approveBtn.addEventListener('click', function() {
+    const currentAppId = this.getAttribute('data-app-id');
+    if (!currentAppId) return alert('Không xác định được bản ghi đang xét duyệt.');
+
+    if (confirm('Bạn có chắc chắn muốn chấp nhận yêu cầu này?')) {
+      updateApplicationStatus(currentAppId, 'approved');
+      bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+    }
+  });
+
+  // === Khi nhấn "Từ chối" ===
+  rejectBtn.addEventListener('click', function() {
+    const currentAppId = this.getAttribute('data-app-id');
+    const reason = document.getElementById('rejectReason').value.trim();
+    if (!reason) return alert('Vui lòng nhập lý do từ chối!');
+    if (confirm('Xác nhận từ chối yêu cầu này?')) {
+      updateApplicationStatus(currentAppId, 'rejected', reason);
+      bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+    }
+  });
+
+  // === Khi đóng modal chi tiết ===
+  document.getElementById('cancelBtn').addEventListener('click', function() {
+    approveBtn.removeAttribute('data-app-id');
+    addTaiKhoanBtn.removeAttribute('data-app-id');
+    approveBtn.style.display = 'none';
+    addTaiKhoanBtn.style.display = 'inline-block';
+  });
+
+  // === Khi xem chi tiết 1 hàng ===
+  function showApplicationDetail(appId) {
+    const app = currentApplications.find(a => a.id == appId);
+    if (!app) return alert('Không tìm thấy dữ liệu chi tiết!');
+
+    // Gán ID cho các nút
+    addTaiKhoanBtn.setAttribute('data-app-id', app.id);
+    approveBtn.setAttribute('data-app-id', app.id);
+    rejectBtn.setAttribute('data-app-id', app.id);
+
+    // Gán thông tin
+    document.getElementById('detailMssv').textContent = app.mssv_input || '-';
+    document.getElementById('detailCccd').textContent = app.cccd_input || '-';
+    document.getElementById('detailName').textContent = app.ho_ten || '-';
+    document.getElementById('detailDob').textContent = app.ngay_sinh || '-';
+    document.getElementById('detailGender').textContent = app.gioi_tinh || '-';
+    document.getElementById('detailHometown').textContent = app.que_quan || '-';
+    document.getElementById('detailAddress').textContent = app.noi_thuong_tru || '-';
+    document.getElementById('detailIssueDate').textContent = app.ngay_cap || '-';
+    document.getElementById('detailIssuePlace').textContent = app.noi_cap || '-';
+    document.getElementById('detailFrontImage').src = app.anh_cccd_moi || app.anh_cccd || '/storage/cccd_images/default.jpg';
+    document.getElementById('detailCurrentNote').textContent = app.ghi_chu || '-';
+    document.getElementById('detailSubmitTime').textContent = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : '-';
+    document.getElementById('detailUpdateTime').textContent = app.updated_at ? new Date(app.updated_at).toLocaleString('vi-VN') : '-';
+
+    // Cập nhật trạng thái badge
+    const statusBadge = document.getElementById('detailStatusBadge');
+    statusBadge.className = `status-badge status-${app.trang_thai}`;
+    statusBadge.textContent =
+      app.trang_thai === 'approved' ? 'Đã duyệt' :
+      app.trang_thai === 'rejected' ? 'Đã từ chối' : 'Đang chờ';
+
+    // Kiểm tra nếu app đã có loại tài khoản
+    const existing = selectedAccountsMap[appId] || [];
+    renderSelectedLoaiTaiKhoan(existing, appId);
+
+    if (existing.length > 0) {
+      addTaiKhoanBtn.style.display = 'none';
+      approveBtn.style.display = 'inline-block';
+    } else {
+      addTaiKhoanBtn.style.display = 'inline-block';
+      approveBtn.style.display = 'none';
+    }
+
+    detailModal.show();
+  }
+
+  // === Load danh sách ===
+  async function loadApplications() {
+    try {
+      const response = await fetch('/quan-ly-xet-duyet');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      currentApplications = data.applications || data || [];
+      filterApplications();
+    } catch (error) {
+      console.error('Error loading applications:', error);
+    }
+  }
+
+  // === Lọc danh sách ===
+  function filterApplications() {
+    const searchTerm = searchInput.value.toLowerCase();
+    filteredApplications = currentApplications.filter(app => {
+      const matchesFilter = currentFilter === 'all' || app.trang_thai === currentFilter;
+      const matchesSearch = !searchTerm ||
+        (app.mssv_input && app.mssv_input.toLowerCase().includes(searchTerm)) ||
+        (app.cccd_input && app.cccd_input.toLowerCase().includes(searchTerm)) ||
+        (app.ho_ten && app.ho_ten.toLowerCase().includes(searchTerm));
+      return matchesFilter && matchesSearch;
+    });
+    renderApplications();
+    updateStatistics();
+  }
+
+  // === Render danh sách ===
+  function renderApplications() {
+    if (filteredApplications.length === 0) {
+      applicationsList.innerHTML = `<div class="text-center py-5 text-muted">Không có yêu cầu nào</div>`;
+      return;
+    }
+
+    let html = '';
+    filteredApplications.forEach(app => {
+      const statusClass = `status-${app.trang_thai}`;
+      const statusText =
+        app.trang_thai === 'approved' ? 'Đã duyệt' :
+        app.trang_thai === 'rejected' ? 'Từ chối' : 'Chờ duyệt';
+      const submitTime = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : '-';
+      html += `
+        <div class="application-item">
+          <div class="application-info">
+            <div class="d-flex justify-content-between mb-1">
+              <h6 class="fw-bold mb-0">${app.ho_ten || app.mssv_input}</h6>
+              <span class="status-badge ${statusClass}">${statusText}</span>
+            </div>
+            <div class="text-muted small">
+              MSSV: ${app.mssv_input || '-'} | CCCD: ${app.cccd_input || '-'} | ${submitTime}
+            </div>
+          </div>
+          <div class="application-actions">
+            <button class="btn btn-sm btn-outline-primary view-detail" data-id="${app.id}">
+              <i class="fas fa-eye me-1"></i> Chi tiết
+            </button>
+          </div>
+        </div>`;
+    });
+
+    applicationsList.innerHTML = html;
+    document.querySelectorAll('.view-detail').forEach(btn => {
+      btn.addEventListener('click', () => showApplicationDetail(btn.getAttribute('data-id')));
+    });
+  }
+
+  // === Cập nhật thống kê ===
+  function updateStatistics() {
+    document.getElementById('totalCount').textContent = currentApplications.length;
+    document.getElementById('pendingCount').textContent = currentApplications.filter(a => a.trang_thai === 'pending').length;
+    document.getElementById('approvedCount').textContent = currentApplications.filter(a => a.trang_thai === 'approved').length;
+    document.getElementById('rejectedCount').textContent = currentApplications.filter(a => a.trang_thai === 'rejected').length;
+  }
+
+  // === Cập nhật trạng thái server ===
+  async function updateApplicationStatus(appId, status, reason = '') {
+    try {
+      const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      const res = await fetch('/quan-ly-xet-duyet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': token,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ id: appId, status, reason })
+      });
+      const result = await res.json();
+      if (result.success) {
+        alert('Cập nhật thành công!');
+        loadApplications();
+      } else {
+        alert(result.message || 'Có lỗi khi cập nhật.');
+      }
+    } catch (err) {
+      alert('Lỗi khi cập nhật: ' + err.message);
+    }
+  }
+});
+</script>
+
 </body>
 </html>
