@@ -271,6 +271,78 @@
       align-items: center;
       height: 200px;
     }
+.tk-grid-row {
+  display: grid;
+  grid-template-columns: 40px 6fr 6fr; /* 3 cột: checkbox | mô tả | input */
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+}
+
+/* ✅ Header style */
+.header-row {
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+
+/* ✅ Dòng dữ liệu */
+#checkboxContainer .tk-grid-row {
+  border-bottom: 1px solid #eee;
+}
+
+/* Checkbox giữa cột */
+.col-checkbox {
+  text-align: center;
+}
+
+/* Cột mô tả */
+.col-info label,
+.header-row .col-info {
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Input tên tài khoản */
+.col-input .tk-name-input {
+  width: 100%;
+}
+
+/* Hiệu ứng hiện input */
+.tk-name-input {
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.2s ease;
+}
+.tk-name-input[style*="display: block"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Checkbox rõ ràng */
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #0d6efd;
+  border: 2px solid #0d6efd;
+  border-radius: 4px;
+  transition: 0.2s ease;
+}
+.custom-checkbox:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+/* Hover dòng */
+#checkboxContainer .tk-grid-row:hover {
+  background-color: #f8f9fa;
+}
+
   </style>
 </head>
 
@@ -384,154 +456,117 @@
   </div>
 
   <!-- Detail Modal -->
-  <div class="modal fade detail-modal" id="detailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content p-3">
-        <div class="modal-header">
-          <h5 class="modal-title">Chi tiết yêu cầu xét duyệt</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+  <!-- ✅ Modal chi tiết xét duyệt -->
+<div class="modal fade detail-modal" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        <h5 class="modal-title">Chi tiết yêu cầu xét duyệt</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body row gap-2 justify-content-center">
+        <!-- Thông tin chung -->
+        <div class="col-md-4 info-card">
+          <h6><i class="fas fa-info-circle me-2"></i>Thông tin chung</h6>
+          <div class="info-item"><span class="info-label">MSSV:</span><span class="info-value" id="detailMssv">-</span></div>
+          <div class="info-item"><span class="info-label">Số CCCD:</span><span class="info-value" id="detailCccd">-</span></div>
+          <div class="info-item"><span class="info-label">Trạng thái:</span><span class="info-value"><span class="status-badge status-pending" id="detailStatusBadge">Đang chờ</span></span></div>
+          <div class="info-item"><span class="info-label">Thời gian gửi:</span><span class="info-value" id="detailSubmitTime">-</span></div>
+          <div class="info-item"><span class="info-label">Thời gian cập nhật:</span><span class="info-value" id="detailUpdateTime">-</span></div>
         </div>
-        <div class="modal-body row gap-2 justify-content-center ">
-          <!-- Thông tin chung -->
-          <div class="col-md-4 info-card">
-            <h6><i class="fas fa-info-circle me-2"></i>Thông tin chung</h6>
-            <div class="info-item">
-              <span class="info-label">MSSV:</span>
-              <span class="info-value" id="detailMssv">-</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Số CCCD:</span>
-              <span class="info-value" id="detailCccd">-</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Trạng thái:</span>
-              <span class="info-value"><span class="status-badge status-pending" id="detailStatusBadge">Đang chờ</span></span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Thời gian gửi:</span>
-              <span class="info-value" id="detailSubmitTime">-</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Thời gian cập nhật:</span>
-              <span class="info-value" id="detailUpdateTime">-</span>
-            </div>
-          </div>
 
-          <!-- Thông tin từ CCCD -->
-          <div class="col-md-7 info-card">
-            <h6><i class="fas fa-id-card me-2"></i>Thông tin từ CCCD</h6>
-            <div class="info-item">
-              <span class="info-label">Họ và tên:</span>
-              <span class="info-value" id="detailName">-</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Ngày sinh:</span>
-              <span class="info-value" id="detailDob">-</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Giới tính:</span>
-              <span class="info-value" id="detailGender">-</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Quê quán:</span>
-              <span class="info-value" id="detailHometown">-</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Địa chỉ thường trú:</span>
-              <span class="info-value" id="detailAddress">-</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Ngày cấp:</span>
-              <span class="info-value" id="detailIssueDate">-</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Nơi cấp:</span>
-              <span class="info-value" id="detailIssuePlace">-</span>
-            </div>
-          </div>
+        <!-- Thông tin từ CCCD -->
+        <div class="col-md-7 info-card">
+          <h6><i class="fas fa-id-card me-2"></i>Thông tin từ CCCD</h6>
+          <div class="info-item"><span class="info-label">Họ và tên:</span><span class="info-value" id="detailName">-</span></div>
+          <div class="info-item"><span class="info-label">Ngày sinh:</span><span class="info-value" id="detailDob">-</span></div>
+          <div class="info-item"><span class="info-label">Giới tính:</span><span class="info-value" id="detailGender">-</span></div>
+          <div class="info-item"><span class="info-label">Quê quán:</span><span class="info-value" id="detailHometown">-</span></div>
+          <div class="info-item"><span class="info-label">Địa chỉ thường trú:</span><span class="info-value" id="detailAddress">-</span></div>
+          <div class="info-item"><span class="info-label">Ngày cấp:</span><span class="info-value" id="detailIssueDate">-</span></div>
+          <div class="info-item"><span class="info-label">Nơi cấp:</span><span class="info-value" id="detailIssuePlace">-</span></div>
+        </div>
 
-          <!-- Hình ảnh CCCD -->
-          <div class="info-card">
-            <h6><i class="fas fa-images me-2"></i>Hình ảnh CCCD</h6>
-            <div class="row">
-              <div class="col-md-12 text-center">
-                <p class="mb-2">Ảnh CCCD đã tải lên</p>
-                <img id="detailFrontImage" class="image-preview" style="max-height: 300px; width: auto;">
-              </div>
-            </div>
-          </div>
-
-          <!-- Lịch sử và ghi chú -->
-          <div class="info-card">
-            <h6><i class="fas fa-history me-2"></i>Lịch sử xét duyệt</h6>
-            <div class="info-item">
-              <span class="info-label">Ghi chú hiện tại:</span>
-              <span class="info-value" id="detailCurrentNote">-</span>
-            </div>
-            <div class="mt-3">
-              <label for="rejectReason" class="form-label">Ghi chú/Lý do (nếu từ chối)</label>
-              <textarea class="form-control" id="rejectReason" rows="3" placeholder="Nhập lý do từ chối hoặc ghi chú xét duyệt..."></textarea>
-              <div class="form-text">Ghi chú này sẽ được lưu lại trong lịch sử xét duyệt</div>
-            </div>
-          </div>
-          <div class="mt-4" id="loaiTaiKhoanSection" style="display:none;">
-            <h6 class="text-primary"><i class="fas fa-user-cog me-2"></i>Các loại tài khoản được xét duyệt</h6>
-            <div id="loaiTaiKhoanList" class="p-2 border rounded bg-light">
-              <p class="text-muted mb-0">Chưa có loại tài khoản nào được chọn.</p>
-            </div>
-            <div class="mt-3 text-end">
-              <button class="btn btn-outline-primary btn-sm" id="suaTaiKhoanBtn">
-                <i class="fas fa-edit me-1"></i> Sửa danh sách
-              </button>
+        <!-- Hình ảnh CCCD -->
+        <div class="info-card">
+          <h6><i class="fas fa-images me-2"></i>Hình ảnh CCCD</h6>
+          <div class="row">
+            <div class="col-md-12 text-center">
+              <p class="mb-2">Ảnh CCCD đã tải lên</p>
+              <img id="detailFrontImage" class="image-preview" style="max-height: 300px; width: auto;">
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" id="cancelBtn" data-bs-dismiss="modal">Đóng</button>
-          <button type="button" class="btn btn-danger btn-reject" id="rejectBtn">
-            <i class="fas fa-times me-1"></i> Từ chối
-          </button>
-          <button type="button" class="btn btn-primary btn-add" id="addTaiKhoanBtn">
-            <i class="fas fa-plus me-1"></i> Thêm tài khoản
-          </button>
-          <button type="button" class="btn btn-success btn-approve" id="approveBtn" style="display:none;">
-            <i class="fas fa-check me-1"></i> Chấp nhận
-          </button>
+
+        <!-- Lịch sử và ghi chú -->
+        <div class="info-card">
+          <h6><i class="fas fa-history me-2"></i>Lịch sử xét duyệt</h6>
+          <div class="info-item"><span class="info-label">Ghi chú hiện tại:</span><span class="info-value" id="detailCurrentNote">-</span></div>
+          <div class="mt-3">
+            <label for="rejectReason" class="form-label">Ghi chú/Lý do (nếu từ chối)</label>
+            <textarea class="form-control" id="rejectReason" rows="3" placeholder="Nhập lý do từ chối hoặc ghi chú xét duyệt..."></textarea>
+            <div class="form-text">Ghi chú này sẽ được lưu lại trong lịch sử xét duyệt</div>
+          </div>
+        </div>
+
+        <!-- Các loại tài khoản được xét duyệt -->
+        <div class="mt-4" id="loaiTaiKhoanSection" style="display:none;">
+          <h6 class="text-primary"><i class="fas fa-user-cog me-2"></i>Các loại tài khoản được xét duyệt</h6>
+          <div id="loaiTaiKhoanList" class="p-2 border rounded bg-light">
+            <p class="text-muted mb-0">Chưa có loại tài khoản nào được chọn.</p>
+          </div>
+          <div class="mt-3 text-end">
+            <button class="btn btn-outline-primary btn-sm" id="suaTaiKhoanBtn">
+              <i class="fas fa-edit me-1"></i> Sửa danh sách
+            </button>
+          </div>
         </div>
       </div>
-      <!-- Modal chọn loại tài khoản -->
-      <div class="modal fade" id="loaiTkModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered"> <!-- căn dọc -->
-          <div class="modal-content p-3 shadow-lg">
-            <div class="modal-header">
-              <h5 class="modal-title">Xét duyệt các tài khoản cho sinh viên</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
 
-            <div class="modal-body">
-              <!-- Chọn tất cả -->
-              <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
-                <label class="form-check-label fw-semibold" for="selectAllCheckbox">
-                  Chọn tất cả
-                </label>
-              </div>
-
-              <!-- Danh sách checkbox loại tài khoản -->
-              <div id="checkboxContainer" class="mb-2" style="max-height: 300px; overflow-y: auto;"></div>
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-              <button type="button" class="btn btn-success" id="confirmLoaiTkBtn">
-                <i class="fas fa-check me-1"></i> Xác nhận
-              </button>
-            </div>
-          </div>
-        </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" id="cancelBtn" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-danger btn-reject" id="rejectBtn"><i class="fas fa-times me-1"></i> Từ chối</button>
+        <button type="button" class="btn btn-primary btn-add" id="addTaiKhoanBtn"><i class="fas fa-plus me-1"></i> Thêm tài khoản</button>
+        <button type="button" class="btn btn-success btn-approve" id="approveBtn" style="display:none;"><i class="fas fa-check me-1"></i> Chấp nhận</button>
       </div>
     </div>
   </div>
+</div>
+
+<!-- ✅ Modal nhỏ (đặt RA NGOÀI modal lớn) -->
+<div class="modal fade" id="loaiTkModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content p-3 shadow-lg">
+      <div class="modal-header">
+        <h5 class="modal-title">Xét duyệt các tài khoản cho sinh viên</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
+          <label class="form-check-label fw-semibold" for="selectAllCheckbox">Chọn tất cả</label>
+        </div>
+       <!-- ✅ Header 3 cột đồng bộ layout -->
+<div id="checkboxHeader" class="tk-grid-row header-row">
+  <div class="col-checkbox"></div>
+  <div class="col-info fw-semibold text-secondary">Loại tài khoản</div>
+  <div class="col-input fw-semibold text-secondary">Tên tài khoản</div>
+</div>
+
+        <div id="checkboxContainer" class="mb-2" style="max-height: 300px; overflow-y: auto;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-success" id="confirmLoaiTkBtn"><i class="fas fa-check me-1"></i> Xác nhận</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -546,16 +581,17 @@
       let filteredApplications = [];
       const selectedAccountsMap = {}; // mỗi xét duyệt có danh sách loại TK riêng
 
-      // === Elements trong modal ===
-      const addTaiKhoanBtn = document.getElementById('addTaiKhoanBtn');
-      const approveBtn = document.getElementById('approveBtn');
-      const rejectBtn = document.getElementById('rejectBtn');
-      const loaiTkModal = new bootstrap.Modal(document.getElementById('loaiTkModal'));
-      const confirmLoaiTkBtn = document.getElementById('confirmLoaiTkBtn');
-      const checkboxContainer = document.getElementById('checkboxContainer');
-      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-      const loaiTaiKhoanSection = document.getElementById('loaiTaiKhoanSection');
-      const loaiTaiKhoanList = document.getElementById('loaiTaiKhoanList');
+  // === Elements trong modal ===
+  const addTaiKhoanBtn = document.getElementById('addTaiKhoanBtn');
+  const approveBtn = document.getElementById('approveBtn');
+  const rejectBtn = document.getElementById('rejectBtn');
+  const loaiTkModal = new bootstrap.Modal(document.getElementById('loaiTkModal'));
+
+  const confirmLoaiTkBtn = document.getElementById('confirmLoaiTkBtn');
+  const checkboxContainer = document.getElementById('checkboxContainer');
+  const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+  const loaiTaiKhoanSection = document.getElementById('loaiTaiKhoanSection');
+  const loaiTaiKhoanList = document.getElementById('loaiTaiKhoanList');
 
       // === INIT ===
       loadApplications();
@@ -593,108 +629,200 @@
         }
       });
 
-      // === Hiển thị checkbox trong modal nhỏ ===
-      function renderLoaiTaiKhoanCheckbox(data, appId) {
-        checkboxContainer.innerHTML = '';
-        data.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'form-check mb-2';
-          div.innerHTML = `
-      <input class="form-check-input loai-tk-item" type="checkbox" value="${item.id}" id="tk_${item.id}" 
-            data-name="${item.ten_loai}" data-desc="${item.mo_ta || ''}">
-      <label class="form-check-label" for="tk_${item.id}">
-        <strong>${item.ten_loai}</strong> - ${item.mo_ta || ''}
-      </label>
+  // === Hiển thị checkbox trong modal nhỏ ===
+function renderLoaiTaiKhoanCheckbox(data, appId) {
+  checkboxContainer.innerHTML = '';
+
+  data.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'tk-grid-row';
+    div.innerHTML = `
+      <div class="col-checkbox">
+        <input class="form-check-input loai-tk-item custom-checkbox" type="checkbox" value="${item.id}" id="tk_${item.id}"
+              data-name="${item.ten_loai}" data-desc="${item.mo_ta || ''}">
+      </div>
+      <div class="col-info">
+        <label class="form-check-label" for="tk_${item.id}">
+          <strong>${item.ten_loai}</strong> - ${item.mo_ta || ''}
+        </label>
+      </div>
+      <div class="col-input">
+        <input type="text" class="form-control form-control-sm tk-name-input" 
+               placeholder="Nhập tên tài khoản..." data-id="${item.id}" style="display:none;">
+      </div>
     `;
           checkboxContainer.appendChild(div);
         });
 
-        // Nếu app này đã có lựa chọn trước, tick lại
-        const previous = selectedAccountsMap[appId] || [];
-        previous.forEach(acc => {
-          const chk = document.getElementById(`tk_${acc.id}`);
-          if (chk) chk.checked = true;
-        });
+  // === Khi tick checkbox, hiện/ẩn input tương ứng ===
+  const allChecks = checkboxContainer.querySelectorAll('.loai-tk-item');
+  allChecks.forEach(chk => {
+    const input = checkboxContainer.querySelector(`.tk-name-input[data-id="${chk.value}"]`);
 
-        // === Logic chọn tất cả thông minh ===
-        const allChecks = checkboxContainer.querySelectorAll('.loai-tk-item');
+    // Gán sẵn giá trị cũ nếu có
+    const prev = selectedAccountsMap[appId]?.find(a => a.id == chk.value);
+    if (prev) {
+      chk.checked = true;
+      input.value = prev.ten_tai_khoan || '';
+      input.style.display = 'block';
+    }
 
-        // Khi click vào "Chọn tất cả"
-        selectAllCheckbox.checked = allChecks.length > 0 && [...allChecks].every(chk => chk.checked);
-        selectAllCheckbox.onchange = function() {
-          allChecks.forEach(chk => (chk.checked = this.checked));
-        };
+  chk.addEventListener('change', () => {
+  if (chk.checked) {
+    // Khi tick: hiện input và giữ placeholder “Nhập tên tài khoản”
+    input.style.display = 'block';
+    if (!input.value.trim()) input.placeholder = 'Nhập tên tài khoản';
+    input.focus();
+  } else {
+    // Khi bỏ tick: ẩn input, reset lỗi + placeholder nhưng giữ lại trạng thái ban đầu
+    input.style.display = 'none';
+    input.classList.remove('is-invalid');
+    input.value = '';
+    input.placeholder = 'Nhập tên tài khoản';
+  }
+});
 
-        // Khi click vào từng checkbox con
-        allChecks.forEach(chk => {
-          chk.addEventListener('change', () => {
-            const total = allChecks.length;
-            const checkedCount = [...allChecks].filter(c => c.checked).length;
-
-            if (checkedCount === total) {
-              selectAllCheckbox.checked = true; // nếu chọn hết thì tick “Chọn tất cả”
-            } else {
-              selectAllCheckbox.checked = false; // nếu bỏ bất kỳ thì bỏ tick “Chọn tất cả”
-            }
-          });
-        });
-      }
+  });
 
 
-      // === Khi xác nhận trong modal nhỏ ===
-      confirmLoaiTkBtn.addEventListener('click', function() {
-        const currentAppId = addTaiKhoanBtn.getAttribute('data-app-id');
-        const checkedBoxes = checkboxContainer.querySelectorAll('input[type="checkbox"]:checked');
+  // === Logic chọn tất cả ===
+  selectAllCheckbox.checked = allChecks.length > 0 && [...allChecks].every(chk => chk.checked);
+  selectAllCheckbox.onchange = function () {
+    allChecks.forEach(chk => {
+      chk.checked = this.checked;
+      const input = checkboxContainer.querySelector(`.tk-name-input[data-id="${chk.value}"]`);
+      input.style.display = chk.checked ? 'block' : 'none';
+    });
+  };
 
-        if (checkedBoxes.length === 0) {
-          loaiTkModal.hide();
-          selectedAccountsMap[currentAppId] = [];
-          renderSelectedLoaiTaiKhoan([], currentAppId);
-          addTaiKhoanBtn.style.display = 'inline-block';
-          approveBtn.style.display = 'none';
-          return;
-        }
+  allChecks.forEach(chk => {
+    chk.addEventListener('change', () => {
+      const total = allChecks.length;
+      const checkedCount = [...allChecks].filter(c => c.checked).length;
+      selectAllCheckbox.checked = (checkedCount === total);
+    });
+  });
+}
 
-        // ✅ Lưu danh sách đã chọn riêng cho app này
-        selectedAccountsMap[currentAppId] = Array.from(checkedBoxes).map(cb => ({
-          id: cb.value,
-          ten_loai: cb.dataset.name,
-          mo_ta: cb.dataset.desc
-        }));
 
-        loaiTkModal.hide();
-        renderSelectedLoaiTaiKhoan(selectedAccountsMap[currentAppId], currentAppId);
-        addTaiKhoanBtn.style.display = 'none';
-        approveBtn.style.display = 'inline-block';
+// === Khi xác nhận trong modal nhỏ ===
+confirmLoaiTkBtn.addEventListener('click', function() {
+  const currentAppId = addTaiKhoanBtn.getAttribute('data-app-id');
+  const checkedBoxes = checkboxContainer.querySelectorAll('input.loai-tk-item:checked');
+  let valid = true;
+  const chosen = [];
+
+  // Duyệt từng checkbox được tick
+  checkedBoxes.forEach(cb => {
+    const input = checkboxContainer.querySelector(`.tk-name-input[data-id="${cb.value}"]`);
+    if (!input.value.trim()) {
+      valid = false;
+      input.classList.add('is-invalid');
+      input.placeholder = 'Bạn cần nhập tên tài khoản';
+    } else {
+      input.classList.remove('is-invalid');
+      chosen.push({
+        id: cb.value,
+        ten_loai: cb.dataset.name,
+        mo_ta: cb.dataset.desc,
+        ten_tai_khoan: input.value.trim()
       });
+    }
+  });
 
-      // === Hiển thị danh sách loại tài khoản đã chọn ===
-      function renderSelectedLoaiTaiKhoan(list, appId) {
-        if (!list || list.length === 0) {
-          loaiTaiKhoanSection.style.display = 'none';
-          loaiTaiKhoanList.innerHTML = `<p class="text-muted mb-0">Chưa có loại tài khoản nào được chọn.</p>`;
-          return;
-        }
+  if (!valid) {
+    alert('Vui lòng nhập tên tài khoản cho các loại đã chọn.');
+    return;
+  }
 
-        loaiTaiKhoanSection.style.display = 'block';
-        loaiTaiKhoanList.innerHTML = list.map(item => `
-      <div class="border-bottom py-1">
-        <strong>${item.ten_loai}</strong>
-        <small class="text-muted"> - ${item.mo_ta || 'Không có mô tả'}</small>
-      </div>
-    `).join('');
+  //  Nếu bỏ hết tick thì hiển thị lại nút “Thêm tài khoản”, ẩn “Chấp nhận”
+  if (chosen.length === 0) {
+    loaiTkModal.hide();
+    selectedAccountsMap[currentAppId] = [];
+    renderSelectedLoaiTaiKhoan([], currentAppId);
+    addTaiKhoanBtn.style.display = 'inline-block';
+    approveBtn.style.display = 'none';
+    return;
+  }
 
-        // Nút sửa và xóa danh sách
-        document.getElementById('suaTaiKhoanBtn').onclick = () => {
-          loaiTkModal.show();
-          setTimeout(() => {
-            const all = checkboxContainer.querySelectorAll('.loai-tk-item');
-            all.forEach(chk => {
-              chk.checked = list.some(acc => acc.id == chk.value);
-            });
-          }, 100);
-        };
+  // Lưu dữ liệu đã chọn
+  selectedAccountsMap[currentAppId] = chosen;
+  loaiTkModal.hide();
+  renderSelectedLoaiTaiKhoan(chosen, currentAppId);
+
+  //  Hiển thị nút “Chấp nhận”, ẩn “Thêm tài khoản”
+  addTaiKhoanBtn.style.display = 'none';
+  approveBtn.style.display = 'inline-block';
+});
+
+
+
+  // === Hiển thị danh sách loại tài khoản đã chọn ===
+  function renderSelectedLoaiTaiKhoan(list, appId) {
+  if (!list || list.length === 0) {
+    loaiTaiKhoanSection.style.display = 'none';
+    loaiTaiKhoanList.innerHTML = `<p class="text-muted mb-0">Chưa có loại tài khoản nào được chọn.</p>`;
+    return;
+  }
+
+  loaiTaiKhoanSection.style.display = 'block';
+  loaiTaiKhoanList.innerHTML = `
+    <table class="table table-sm table-bordered align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Loại tài khoản</th>
+          <th>Mô tả</th>
+          <th>Tên tài khoản</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map(item => `
+          <tr>
+            <td><strong>${item.ten_loai}</strong></td>
+            <td>${item.mo_ta || 'Không có mô tả'}</td>
+            <td>${item.ten_tai_khoan || '-'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  // Nút sửa
+document.getElementById('suaTaiKhoanBtn').onclick = () => {
+  loaiTkModal.show();
+
+  setTimeout(() => {
+    // Lấy dữ liệu hiện tại từ bên ngoài
+    const currentAppId = addTaiKhoanBtn.getAttribute('data-app-id');
+    const currentSelected = selectedAccountsMap[currentAppId] || [];
+
+    // Reset tất cả trước khi áp dụng lại
+    const allChecks = checkboxContainer.querySelectorAll('.loai-tk-item');
+    allChecks.forEach(chk => {
+      const input = checkboxContainer.querySelector(`.tk-name-input[data-id="${chk.value}"]`);
+      const found = currentSelected.find(acc => acc.id == chk.value);
+
+      if (found) {
+        chk.checked = true;
+        input.value = found.ten_tai_khoan || '';
+        input.style.display = 'block';
+      } else {
+        chk.checked = false;
+        input.value = '';
+        input.style.display = 'none';
       }
+      input.classList.remove('is-invalid');
+    });
+
+    // Cập nhật checkbox "Chọn tất cả"
+    const total = allChecks.length;
+    const checkedCount = [...allChecks].filter(c => c.checked).length;
+    selectAllCheckbox.checked = checkedCount === total;
+  }, 100);
+};
+
+}
+
 
       // === Khi nhấn "Chấp nhận" ===
       approveBtn.addEventListener('click', function() {
@@ -718,13 +846,26 @@
         }
       });
 
-      // === Khi đóng modal chi tiết ===
-      document.getElementById('cancelBtn').addEventListener('click', function() {
-        approveBtn.removeAttribute('data-app-id');
-        addTaiKhoanBtn.removeAttribute('data-app-id');
-        approveBtn.style.display = 'none';
-        addTaiKhoanBtn.style.display = 'inline-block';
-      });
+  // === Khi đóng modal chi tiết ===
+document.getElementById('cancelBtn').addEventListener('click', function() {
+  const currentStatus = document.getElementById('detailStatusBadge').textContent.trim();
+
+  // Luôn reset ID
+  approveBtn.removeAttribute('data-app-id');
+  addTaiKhoanBtn.removeAttribute('data-app-id');
+  rejectBtn.removeAttribute('data-app-id');
+
+  // Ẩn tất cả nút
+  approveBtn.style.display = 'none';
+  rejectBtn.style.display = 'none';
+  addTaiKhoanBtn.style.display = 'none';
+
+  // Chỉ hiện lại “Thêm tài khoản” nếu đang ở trạng thái “Đang chờ”
+  if (currentStatus === 'Đang chờ' || currentStatus === 'Chờ duyệt') {
+    addTaiKhoanBtn.style.display = 'inline-block';
+  }
+});
+
 
       // === Khi xem chi tiết 1 hàng ===
       function showApplicationDetail(appId) {
@@ -762,13 +903,25 @@
         const existing = selectedAccountsMap[appId] || [];
         renderSelectedLoaiTaiKhoan(existing, appId);
 
-        if (existing.length > 0) {
-          addTaiKhoanBtn.style.display = 'none';
-          approveBtn.style.display = 'inline-block';
-        } else {
-          addTaiKhoanBtn.style.display = 'inline-block';
-          approveBtn.style.display = 'none';
-        }
+   if (app.trang_thai === 'pending') {
+  // Đang chờ duyệt → cho phép thêm tài khoản & từ chối
+  rejectBtn.style.display = 'inline-block';
+  
+  const existing = selectedAccountsMap[appId] || [];
+  if (existing.length > 0) {
+    addTaiKhoanBtn.style.display = 'none';
+    approveBtn.style.display = 'inline-block';
+  } else {
+    addTaiKhoanBtn.style.display = 'inline-block';
+    approveBtn.style.display = 'none';
+  }
+
+} else {
+  // ✅ Nếu đã duyệt hoặc bị từ chối → chỉ hiển thị nút "Đóng"
+  approveBtn.style.display = 'none';
+  rejectBtn.style.display = 'none';
+  addTaiKhoanBtn.style.display = 'none';
+}
 
         detailModal.show();
       }
@@ -848,37 +1001,32 @@
         document.getElementById('rejectedCount').textContent = currentApplications.filter(a => a.trang_thai === 'rejected').length;
       }
 
-      // === Cập nhật trạng thái server ===
-      async function updateApplicationStatus(appId, status, reason = '') {
-        try {
-          const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-          const res = await fetch('/quan-ly-xet-duyet', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': token,
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              id: appId,
-              status,
-              reason
-            })
-          });
-          const result = await res.json();
-          if (result.success) {
-            alert('Cập nhật thành công!');
-            loadApplications();
-          } else {
-            alert(result.message || 'Có lỗi khi cập nhật.');
-          }
-        } catch (err) {
-          alert('Lỗi khi cập nhật: ' + err.message);
-        }
+  // === Cập nhật trạng thái server ===
+  async function updateApplicationStatus(appId, status, reason = '') {
+    try {
+      const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      const res = await fetch('/quan-ly-xet-duyet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': token,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ id: appId, status, reason })
+      });
+      const result = await res.json();
+      if (result.success) {
+        alert('Cập nhật thành công!');
+        loadApplications();
+      } else {
+        alert(result.message || 'Có lỗi khi cập nhật.');
       }
-    });
-  </script>
-
+    } catch (err) {
+      alert('Lỗi khi cập nhật: ' + err.message);
+    }
+  }
+});
+</script>
 </body>
 
 </html>
