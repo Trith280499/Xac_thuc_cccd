@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('mssv')->unique();
             $table->string('so_cccd');
             $table->string('trang_thai')->default('active');
+            $table->string('anh_cccd')->nullable();
             $table->timestamps();
         });
     }

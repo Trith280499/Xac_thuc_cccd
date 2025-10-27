@@ -23,7 +23,6 @@ return new class extends Migration
             // Index cho tra cứu nhanh
             $table->index('mssv_input');
             $table->index('cccd_input');
-            $table->index('so_cccd');
         });
     }
 
