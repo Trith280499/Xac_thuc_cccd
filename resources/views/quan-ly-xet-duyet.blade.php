@@ -1009,7 +1009,6 @@ document.getElementById('cancelBtn').addEventListener('click', function() {
         approveBtn.setAttribute('data-app-id', app.id);
         rejectBtn.setAttribute('data-app-id', app.id);
 
-<<<<<<< HEAD
     // Gán thông tin
     document.getElementById('detailMssv').textContent = app.mssv_input || '-';
     document.getElementById('detailCccd').textContent = app.cccd_input || '-';
@@ -1017,22 +1016,6 @@ document.getElementById('cancelBtn').addEventListener('click', function() {
     document.getElementById('detailCurrentNote').textContent = app.ghi_chu || '-';
     document.getElementById('detailSubmitTime').textContent = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : '-';
     document.getElementById('detailUpdateTime').textContent = app.updated_at ? new Date(app.updated_at).toLocaleString('vi-VN') : '-';
-=======
-        // Gán thông tin
-        document.getElementById('detailMssv').textContent = app.mssv_input || '-';
-        document.getElementById('detailCccd').textContent = app.cccd_input || '-';
-        document.getElementById('detailName').textContent = app.ho_ten || '-';
-        document.getElementById('detailDob').textContent = app.ngay_sinh || '-';
-        document.getElementById('detailGender').textContent = app.gioi_tinh || '-';
-        document.getElementById('detailHometown').textContent = app.que_quan || '-';
-        document.getElementById('detailAddress').textContent = app.noi_thuong_tru || '-';
-        document.getElementById('detailIssueDate').textContent = app.ngay_cap || '-';
-        document.getElementById('detailIssuePlace').textContent = app.noi_cap || '-';
-        document.getElementById('detailFrontImage').src = app.anh_cccd_moi || app.anh_cccd || '/storage/cccd_images/default.jpg';
-        document.getElementById('detailCurrentNote').textContent = app.ghi_chu || '-';
-        document.getElementById('detailSubmitTime').textContent = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : '-';
-        document.getElementById('detailUpdateTime').textContent = app.updated_at ? new Date(app.updated_at).toLocaleString('vi-VN') : '-';
->>>>>>> 2ec2e9a62424ff39463d1338482fcd1800d93323
 
         // Cập nhật trạng thái badge
         const statusBadge = document.getElementById('detailStatusBadge');
