@@ -6,6 +6,7 @@ use App\Models\LoaiTaiKhoan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CccdVerifyController extends Controller
 {
@@ -108,7 +109,7 @@ public function getAllLoaiTK(Request $request)
             // Thử auto parse nếu không khớp mẫu nào
             return \Carbon\Carbon::parse($normalized)->format('Y-m-d');
         } catch (\Exception $e) {
-            \Log::warning('⚠️ Date parse failed for: '.$dateString.' | '.$e->getMessage());
+            Log::warning('Date parse failed for: '.$dateString.' | '.$e->getMessage());
             return null;
         }
     }
