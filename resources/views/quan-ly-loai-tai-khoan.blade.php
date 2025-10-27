@@ -3,11 +3,10 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Chọn tài khoản kích hoạt</title>
+  <title>Quản lý loại tài khoản</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <style>
-    /* Giữ nguyên các style cũ */
     body {
       background-color: #f8f9fa;
     }
@@ -26,18 +25,6 @@
       margin-right: 10px;
     }
 
-    .btn-success {
-      background-color: #198754;
-      border-color: #198754;
-      padding: 10px 30px;
-      font-weight: 600;
-    }
-
-    .btn-success:hover {
-      background-color: #157347;
-      border-color: #146c43;
-    }
-
     .btn-outline-primary {
       margin-right: 5px;
     }
@@ -46,13 +33,6 @@
       display: flex;
       justify-content: center;
       gap: 5px;
-    }
-
-    .select-all-container {
-      background-color: #f0f8ff;
-      padding: 10px 15px;
-      border-radius: 5px;
-      margin: 0;
     }
 
     .status-badge {
@@ -72,32 +52,18 @@
       color: #991b1b;
     }
 
-    .info-section {
-      background-color: #f8f9fa;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-
-    .info-item {
-      display: flex;
-      margin-bottom: 8px;
-    }
-
-    .info-label {
-      min-width: 120px;
-      font-weight: 600;
-      color: #0d6efd;
-    }
-
-    .info-value {
-      flex: 1;
-    }
-
     .loading-spinner {
       display: none;
       text-align: center;
       padding: 20px;
+    }
+
+    .footer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 5px;
+      padding-top: 5px;
     }
   </style>
 </head>
@@ -117,16 +83,7 @@
         <p class="mt-2">Đang tải dữ liệu...</p>
       </div>
 
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="select-all-container">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
-            <label class="form-check-label fw-bold" for="selectAllCheckbox">
-              Chọn tất cả tài khoản
-            </label>
-          </div>
-        </div>
-
+      <div class="d-flex justify-content-end mb-3">
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAccountModal">
           Thêm tài khoản
         </button>
@@ -138,7 +95,6 @@
             <th>Tên loại</th>
             <th>Mô tả</th>
             <th class="text-center">Trạng thái</th>
-            <th class="text-center">Chọn</th>
             <th class="text-center">Thao tác</th>
           </tr>
         </thead>
@@ -147,8 +103,12 @@
         </tbody>
       </table>
 
-      <div class="text-center mt-4">
-        <button id="confirmBtn" class="btn btn-success px-4">Kích hoạt tài khoản</button>
+      <!-- Footer với nút quay lại -->
+      <div class="footer-actions">
+        <a href="{{ route('quan-ly-xet-duyet.form') }}" class="btn btn-outline-secondary">
+          Quay lại
+        </a>
+        <div></div> 
       </div>
     </div>
   </div>
@@ -164,15 +124,15 @@
         <div class="modal-body">
           <form id="addAccountForm">
             <div class="mb-3">
-              <label for="newAccountType" class="form-label">Tên loại *</label>
+              <label for="newAccountType" class="form-label">Tên loại</label>
               <input type="text" class="form-control" id="newAccountType" placeholder="Nhập tên loại tài khoản" required>
             </div>
             <div class="mb-3">
-              <label for="newAccountDescription" class="form-label">Mô tả *</label>
+              <label for="newAccountDescription" class="form-label">Mô tả</label>
               <textarea class="form-control" id="newAccountDescription" placeholder="Nhập mô tả" rows="3" required></textarea>
             </div>
             <div class="mb-3">
-              <label class="form-label">Trạng thái *</label>
+              <label class="form-label">Trạng thái</label>
               <div>
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="newAccountStatus" id="newStatusActive" value="active" checked>
@@ -264,12 +224,10 @@
 
     let accountToDeleteId = null;
 
-    // Hiển thị loading
     function showLoading() {
       document.getElementById('loadingSpinner').style.display = 'block';
     }
 
-    // Ẩn loading
     function hideLoading() {
       document.getElementById('loadingSpinner').style.display = 'none';
     }
@@ -280,36 +238,32 @@
 
       if (accountsData.accounts.length === 0) {
         accountList.innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-4">
-                        Không có dữ liệu loại tài khoản
-                    </td>
-                </tr>
-            `;
+          <tr>
+            <td colspan="4" class="text-center text-muted py-4">
+              Không có dữ liệu loại tài khoản
+            </td>
+          </tr>
+        `;
         return;
       }
 
       accountList.innerHTML = accountsData.accounts.map((acc, index) => `
-            <tr>
-                <td>${acc.ten_loai}</td>
-                <td>${acc.mo_ta}</td>
-                <td class="text-center">
-                    <span class="status-badge ${acc.trang_thai === 'active' ? 'status-active' : 'status-inactive'}">
-                        ${acc.trang_thai === 'active' ? 'Active' : 'Inactive'}
-                    </span>
-                </td>
-                <td class="text-center">
-                    <input type="checkbox" class="form-check-input choose-account"
-                        data-type="${acc.ten_loai}" data-description="${acc.mo_ta}">
-                </td>
-                <td class="text-center">
-                    <div class="action-buttons">
-                        <button class="btn btn-sm btn-outline-primary edit-account" data-id="${acc.id}" data-index="${index}">Sửa</button>
-                        <button class="btn btn-sm btn-outline-danger delete-account" data-id="${acc.id}" data-name="${acc.ten_loai}">Xóa</button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        <tr>
+          <td>${acc.ten_loai}</td>
+          <td>${acc.mo_ta}</td>
+          <td class="text-center">
+            <span class="status-badge ${acc.trang_thai === 'active' ? 'status-active' : 'status-inactive'}">
+              ${acc.trang_thai === 'active' ? 'Active' : 'Inactive'}
+            </span>
+          </td>
+          <td class="text-center">
+            <div class="action-buttons">
+              <button class="btn btn-sm btn-outline-primary edit-account" data-id="${acc.id}" data-index="${index}">Sửa</button>
+              <button class="btn btn-sm btn-outline-danger delete-account" data-id="${acc.id}" data-name="${acc.ten_loai}">Xóa</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
 
       // Thêm sự kiện cho các nút Sửa và Xóa
       document.querySelectorAll('.edit-account').forEach(button => {
@@ -327,8 +281,6 @@
           showDeleteConfirmation(id, name);
         });
       });
-
-      updateSelectAllCheckbox();
     }
 
     // Hiển thị modal sửa tài khoản
@@ -356,37 +308,11 @@
       deleteModal.show();
     }
 
-    // Cập nhật trạng thái của checkbox "Chọn tất cả"
-    function updateSelectAllCheckbox() {
-      const checkboxes = document.querySelectorAll('.choose-account');
-      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-
-      if (checkboxes.length === 0) {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-        return;
-      }
-
-      const checkedCount = document.querySelectorAll('.choose-account:checked').length;
-
-      if (checkedCount === 0) {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-      } else if (checkedCount === checkboxes.length) {
-        selectAllCheckbox.checked = true;
-        selectAllCheckbox.indeterminate = false;
-      } else {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = true;
-      }
-    }
-
     // Gọi API để lấy dữ liệu tài khoản từ database
     async function fetchAccounts() {
       showLoading();
 
       try {
-        // Sử dụng URL trực tiếp
         const apiUrl = '/quan-ly-loai-tai-khoan/api/danh-sach';
         console.log('Đang gọi API:', apiUrl);
 
@@ -421,12 +347,12 @@
     function showError(message) {
       const accountList = document.getElementById('accountList');
       accountList.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center text-danger py-4">
-                    ${message}
-                </td>
-            </tr>
-        `;
+        <tr>
+          <td colspan="4" class="text-center text-danger py-4">
+            ${message}
+          </td>
+        </tr>
+      `;
     }
 
     // Thêm tài khoản mới vào database
@@ -503,20 +429,6 @@
     document.addEventListener('DOMContentLoaded', function() {
       // Gọi API để lấy dữ liệu từ database
       fetchAccounts();
-
-      // Xử lý sự kiện cho checkbox "Chọn tất cả"
-      document.getElementById('selectAllCheckbox').addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.choose-account');
-        checkboxes.forEach(checkbox => {
-          checkbox.checked = this.checked;
-        });
-      });
-
-      document.addEventListener('change', function(e) {
-        if (e.target.classList.contains('choose-account')) {
-          updateSelectAllCheckbox();
-        }
-      });
 
       // Xử lý thêm tài khoản mới
       document.getElementById('saveNewAccountBtn').addEventListener('click', async function() {
@@ -616,23 +528,6 @@
           }
           accountToDeleteId = null;
         }
-      });
-
-      // Xác nhận chọn tài khoản
-      document.getElementById('confirmBtn').addEventListener('click', () => {
-        const selected = [...document.querySelectorAll('.choose-account:checked')]
-          .map(c => ({
-            ten_loai: c.dataset.type,
-            mo_ta: c.dataset.description
-          }));
-
-        if (selected.length === 0) {
-          alert('⚠️ Vui lòng chọn ít nhất một tài khoản!');
-          return;
-        }
-
-        alert("✅ Bạn đã chọn: " + selected.map(s => s.ten_loai).join(", "));
-        console.log("Tài khoản đã chọn:", selected);
       });
     });
   </script>
