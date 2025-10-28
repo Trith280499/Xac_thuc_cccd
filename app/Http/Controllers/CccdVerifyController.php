@@ -24,7 +24,7 @@ class CccdVerifyController extends Controller
             if ($xet_duyet) {
                 return response()->json([
                     'exists' => true,
-                    'status' => $xet_duyet->trang_thai,
+                    'status' => $xet_duyet->trang_thai, 
                     'data' => [
                         'mssv' => $xet_duyet->mssv_input,
                         'cccd' => $xet_duyet->cccd_input,
@@ -165,13 +165,13 @@ public function getAllLoaiTK(Request $request)
 
 
     // Cập nhật trạng thái xét duyệt
-   public function updateApprovalStatus(Request $request)
+public function updateApprovalStatus(Request $request) 
 {
     try {
         $id = $request->input('id');
         $newStatus = $request->input('status');
         $reason = $request->input('reason', '');
-        $accounts = $request->input('accounts', []); // ✅ mảng tài khoản từ UI
+        $accounts = $request->input('accounts', []); // mảng tài khoản {id, ten_tai_khoan}
 
         $approval = XetDuyet::find($id);
         if (!$approval) {
@@ -181,29 +181,19 @@ public function getAllLoaiTK(Request $request)
             ], 404);
         }
 
-        // ✅ Lấy sinh viên_id tương ứng từ mssv_input
-        $student = SinhVien::where('mssv', $approval->mssv_input)->first();
-        if (!$student) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không tìm thấy sinh viên có MSSV: ' . $approval->mssv_input
-            ], 404);
-        }
-
-        // ✅ Nếu trạng thái là approved → lưu vào bảng tai_khoan
+        // Nếu trạng thái là approved → lưu vào bảng tai_khoan
         if ($newStatus === 'approved' && !empty($accounts)) {
             foreach ($accounts as $acc) {
                 TaiKhoan::create([
-                    'ten_tai_khoan' => $acc['ten_tai_khoan'],
-                    'loai_tai_khoan_id' => $acc['id'],
-                    'sinh_vien_id' => $student->id,
-                    'ngay_reset' => null,
-                    'trang_thai' => 'active'
+                    'cccd' => $approval->cccd_input,        // lấy CCCD từ bản xét duyệt
+                    'ten_tai_khoan' => $acc['ten_tai_khoan'], // ✅ tên tài khoản nhập từ UI
+                    'loai_tai_khoan_id' => $acc['id'],      // ID loại tài khoản
+                    'ngay_cap_nhat' => now(),               // ngày hiện tại
                 ]);
             }
         }
 
-        // ✅ Cập nhật trạng thái xét duyệt
+        // Cập nhật trạng thái xét duyệt
         $approval->trang_thai = $newStatus;
         $approval->ghi_chu = $newStatus === 'rejected' ? $reason : '';
         $approval->save();
@@ -220,5 +210,6 @@ public function getAllLoaiTK(Request $request)
         ], 500);
     }
 }
+
 
 }

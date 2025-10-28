@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class XetDuyet extends Model
 {
@@ -13,7 +12,6 @@ class XetDuyet extends Model
     protected $table = 'xet_duyet';
 
     protected $fillable = [
-        // Dữ liệu nhập từ người dùng
         'mssv_input',
         'cccd_input',
         'trang_thai',
@@ -21,14 +19,6 @@ class XetDuyet extends Model
         'ghi_chu',
 
     ];
-
-    /**
-     * Relationship với SinhVien (qua mssv)
-     */
-    public function sinhVien(): BelongsTo
-    {
-        return $this->belongsTo(SinhVien::class, 'mssv_input', 'mssv');
-    }
 
     /**
      * Scope để lấy các bản ghi theo trạng thái

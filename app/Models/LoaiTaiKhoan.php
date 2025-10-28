@@ -12,15 +12,8 @@ class LoaiTaiKhoan extends Model
 
     protected $table = 'loai_tai_khoan';
 
-    protected $fillable = [
-        'ten_loai',
-        'mo_ta',
-        'trang_thai'
-    ];
+    protected $fillable = ['ten_loai', 'mo_ta', 'trang_thai'];
 
-    /**
-     * Relationship với TaiKhoan
-     */
     public function taiKhoans(): HasMany
     {
         return $this->hasMany(TaiKhoan::class, 'loai_tai_khoan_id');

@@ -4,8 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TaiKhoan extends Model
 {
@@ -14,39 +12,18 @@ class TaiKhoan extends Model
     protected $table = 'tai_khoan';
 
     protected $fillable = [
+        'cccd',
         'ten_tai_khoan',
         'loai_tai_khoan_id',
-        'sinh_vien_id',
-        'mat_khau',
-        'ngay_reset',
-        'trang_thai'
+        'ngay_cap_nhat',
     ];
 
     protected $casts = [
-        'ngay_reset' => 'date',
+        'ngay_cap_nhat' => 'date',
     ];
 
-    /**
-     * Relationship với LoaiTaiKhoan
-     */
-    public function loaiTaiKhoan(): BelongsTo
+    public function loaiTaiKhoan()
     {
         return $this->belongsTo(LoaiTaiKhoan::class, 'loai_tai_khoan_id');
-    }
-
-    /**
-     * Relationship với SinhVien
-     */
-    public function sinhVien(): BelongsTo
-    {
-        return $this->belongsTo(SinhVien::class, 'sinh_vien_id');
-    }
-
-    /**
-     * Relationship với LichSuReset
-     */
-    public function lichSuResets(): HasMany
-    {
-        return $this->hasMany(LichSuReset::class, 'tai_khoan_id');
     }
 }

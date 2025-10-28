@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\CanCuocCongDan;
+use App\Models\LichSuReset;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -19,8 +20,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
         $this->call([
             LoaiTaiKhoanSeeder::class, 
-            SinhVienSeeder::class,
-            UserSeeder::class,
+            LichSuReset::class,
             TaiKhoanSeeder::class,
             XetDuyetSeeder::class, 
         ]);

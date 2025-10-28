@@ -47,11 +47,11 @@ Route::prefix('form4')->group(function() {
     Route::get('/lich-su-reset/{taiKhoanId}', [ResetPassController::class, 'getLichSuReset'])->name('lich.su.reset.detail');
 });
 
-Route::prefix('api')->group(function() {
-    Route::post('/cccd-auth', [CccdAuthController::class, 'authenticate'])->name('api.cccd.auth');
-    Route::post('/reset-password', [ResetPassController::class, 'handleReset'])->name('api.reset.password');
-    Route::get('/student-accounts', [ResetPassController::class, 'getStudentAccounts'])->name('api.student.accounts');
-});
+// Route::prefix('api')->group(function() {
+//     Route::post('/cccd-auth', [CccdAuthController::class, 'authenticate'])->name('api.cccd.auth');
+//     Route::post('/reset-password', [ResetPassController::class, 'handleReset'])->name('api.reset.password');
+//     Route::get('/student-accounts', [ResetPassController::class, 'getStudentAccounts'])->name('api.student.accounts');
+// });
 
 Route::get('/cleanup-images', [CccdAuthController::class, 'cleanupOldImages'])->name('cleanup.images');
 
