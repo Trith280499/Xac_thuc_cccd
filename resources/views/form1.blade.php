@@ -191,22 +191,22 @@
       const result = await response.json();
 
       if (result.status === "success") {
-        showAlert("✅ " + result.message, "success");
+        showAlert(" " + result.message, "success");
         // Redirect sẽ được xử lý từ server
       } else if (result.status === "warning") {
         // Không tìm thấy sinh viên -> chuyển đến form xét duyệt
-        showAlert("⚠️ " + result.message, "warning");
+        showAlert(" " + result.message, "warning");
         
         // Chuyển đến form xét duyệt sau 2 giây
         setTimeout(() => {
           window.location.href = "/xet-duyet/view?cccd=" + encodeURIComponent(result.ocr_data?.id || '') + "&image_url=" + encodeURIComponent(result.image_url || '');
         }, 2000);
       } else {
-        showAlert("❌ " + result.message, "danger");
+        showAlert(" " + result.message, "danger");
       }
 
     } catch (err) {
-      showAlert("❌ Lỗi khi gửi ảnh: " + err.message, "danger");
+      showAlert(" Lỗi khi gửi ảnh: " + err.message, "danger");
     } finally {
       uploadBtn.disabled = false;
       uploadBtn.textContent = "Xác thực";

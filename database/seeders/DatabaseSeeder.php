@@ -20,9 +20,8 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
         $this->call([
             LoaiTaiKhoanSeeder::class, 
-            LichSuReset::class,
-            TaiKhoanSeeder::class,
-            XetDuyetSeeder::class, 
+            // LichSuReset::class,
+            // XetDuyetSeeder::class, 
         ]);
 
     }

@@ -56,9 +56,9 @@
   </div>
 
   <div class="info-section mb-4 p-3 border rounded bg-light" style="display: none;" id="infoSection">
-    <h6 class="text-primary">📷 Thông tin từ CCCD</h6>
+    <h6 class="text-primary"> Thông tin từ CCCD</h6>
     <p class="mb-1"><strong>Số CCCD:</strong> <span id="cccdNumber">{{ request()->get('cccd', '') }}</span></p>
-    <p class="mb-1"><strong>Họ và tên:</strong> <span id="cccdName">Đang tải...</span></p>
+    <!-- <p class="mb-1"><strong>Họ và tên:</strong> <span id="cccdName">Đang tải...</span></p> -->
     <p class="mb-0"><strong>Ảnh CCCD:</strong> 
       @if(request()->get('image_url'))
         <a href="{{ request()->get('image_url') }}" target="_blank">Xem ảnh</a>
@@ -187,21 +187,21 @@
       switch(status) {
         case 'pending':
           alertClass = 'status-pending';
-          title = '⏳ Yêu cầu đang chờ xét duyệt';
+          title = ' Yêu cầu đang chờ xét duyệt';
           message = 'Thông tin CCCD của bạn đã được gửi và đang chờ xét duyệt.';
           details = `<p class="mb-0"><strong>MSSV:</strong> ${data.mssv || 'Chưa có'} | <strong>CCCD:</strong> ${cccdNumber}</p>`;
           break;
           
         case 'approved':
           alertClass = 'status-approved';
-          title = '✅ Yêu cầu đã được duyệt';
+          title = ' Yêu cầu đã được duyệt';
           message = 'Thông tin CCCD của bạn đã được xét duyệt và chấp nhận.';
           details = `<p class="mb-0"><strong>MSSV:</strong> ${data.mssv || 'Chưa có'} | <strong>CCCD:</strong> ${cccdNumber}</p>`;
           break;
           
         case 'rejected':
           alertClass = 'status-rejected';
-          title = '❌ Yêu cầu đã bị từ chối';
+          title = ' Yêu cầu đã bị từ chối';
           message = data.reason || 'Thông tin CCCD của bạn không đáp ứng yêu cầu xét duyệt.';
           details = `<p class="mb-1"><strong>Lý do:</strong> ${data.reason || 'Không có thông tin cụ thể'}</p>
                      <p class="mb-0"><strong>MSSV:</strong> ${data.mssv || 'Chưa có'} | <strong>CCCD:</strong> ${cccdNumber}</p>`;
@@ -209,7 +209,7 @@
           
         default:
           alertClass = 'alert-secondary';
-          title = 'ℹ️ Trạng thái không xác định';
+          title = ' Trạng thái không xác định';
           message = 'Không thể xác định trạng thái của yêu cầu xét duyệt.';
       }
       
@@ -231,7 +231,7 @@
       loadingState.style.display = 'none';
       alertBox.innerHTML = `
         <div class="alert alert-danger text-center">
-          <h5>❌ Lỗi</h5>
+          <h5> Lỗi</h5>
           <p>${message}</p>
           <div class="text-center mt-3">
             <a href="/" class="btn btn-outline-primary">Quay lại trang chủ</a>
@@ -283,7 +283,7 @@
           // Show success message
           const successHtml = `
             <div class="alert alert-success text-center">
-              <h5>✅ Đã gửi yêu cầu xét duyệt thành công!</h5>
+              <h5> Đã gửi yêu cầu xét duyệt thành công!</h5>
               <p class="mb-2">Thông tin của bạn đã được ghi nhận và đang chờ xét duyệt.</p>
               <p class="mb-0"><strong>MSSV:</strong> ${mssv} | <strong>CCCD:</strong> ${cccd}</p>
             </div>
@@ -293,11 +293,11 @@
           `;
           document.querySelector('.approval-card').innerHTML = successHtml;
         } else {
-          showAlert('❌ ' + result.message, 'danger');
+          showAlert(' ' + result.message, 'danger');
         }
 
       } catch (error) {
-        showAlert('❌ Lỗi khi gửi yêu cầu: ' + error.message, 'danger');
+        showAlert(' Lỗi khi gửi yêu cầu: ' + error.message, 'danger');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Gửi yêu cầu xét duyệt';

@@ -87,7 +87,7 @@ class CccdAuthController extends Controller
                 // Trả JSON để UI xử lý redirect
                 return response()->json([
                     'status' => 'warning',
-                    'message' => 'Không tìm thấy tài khoản, chuyển sang form xét duyệt.',
+                    'message' => 'Không tìm thấy tài khoản, cần gửi yêu cầu xét duyệt.',
                     'ocr_data' => $ocrData,
                     'image_url' => $imageUrl,
                 ], 200);
