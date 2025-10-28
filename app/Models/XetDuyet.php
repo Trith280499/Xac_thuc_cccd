@@ -17,5 +17,38 @@ class XetDuyet extends Model
         'trang_thai',
         'anh_cccd',
         'ghi_chu',
+
     ];
+
+    /**
+     * Scope để lấy các bản ghi theo trạng thái
+     */
+    public function scopeTrangThai($query, $trangThai)
+    {
+        return $query->where('trang_thai', $trangThai);
+    }
+
+    /**
+     * Scope để lấy các bản ghi đang chờ xét duyệt
+     */
+    public function scopeChoDuyet($query)
+    {
+        return $query->where('trang_thai', 'pending');
+    }
+
+    /**
+     * Scope để lấy các bản ghi đã duyệt
+     */
+    public function scopeDaDuyet($query)
+    {
+        return $query->where('trang_thai', 'approved');
+    }
+
+    /**
+     * Scope để lấy các bản ghi bị từ chối
+     */
+    public function scopeTuChoi($query)
+    {
+        return $query->where('trang_thai', 'rejected');
+    }
 }

@@ -343,6 +343,106 @@
   background-color: #f8f9fa;
 }
 
+/* ========== CẢI THIỆN UI THÔNG TIN CHUNG ========== */
+.info-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 20px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+.info-card h6 {
+  color: var(--primary-color);
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eaeaea;
+  display: flex;
+  align-items: center;
+}
+
+.info-card h6 i {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #495057;
+  min-width: 160px;
+  font-size: 0.9rem;
+}
+
+.info-value {
+  color: #212529;
+  font-weight: 500;
+  flex: 1;
+}
+
+.info-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(18, 72, 116, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 0;
+  }
+  
+  .info-label {
+    min-width: auto;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+  }
+  
+  .info-value {
+    font-size: 0.95rem;
+  }
+  
+  .info-icon {
+    display: none;
+  }
+}
+
   </style>
 </head>
 
@@ -466,26 +566,48 @@
       </div>
 
       <div class="modal-body row gap-2 justify-content-center">
-        <!-- Thông tin chung -->
-        <div class="col-md-4 info-card">
+        <!-- Thông tin chung - ĐÃ ĐƯỢC CẢI THIỆN -->
+        <div class="col-md-12 info-card">
           <h6><i class="fas fa-info-circle me-2"></i>Thông tin chung</h6>
-          <div class="info-item"><span class="info-label">MSSV:</span><span class="info-value" id="detailMssv">-</span></div>
-          <div class="info-item"><span class="info-label">Số CCCD:</span><span class="info-value" id="detailCccd">-</span></div>
-          <div class="info-item"><span class="info-label">Trạng thái:</span><span class="info-value"><span class="status-badge status-pending" id="detailStatusBadge">Đang chờ</span></span></div>
-          <div class="info-item"><span class="info-label">Thời gian gửi:</span><span class="info-value" id="detailSubmitTime">-</span></div>
-          <div class="info-item"><span class="info-label">Thời gian cập nhật:</span><span class="info-value" id="detailUpdateTime">-</span></div>
-        </div>
-
-        <!-- Thông tin từ CCCD -->
-        <div class="col-md-7 info-card">
-          <h6><i class="fas fa-id-card me-2"></i>Thông tin từ CCCD</h6>
-          <div class="info-item"><span class="info-label">Họ và tên:</span><span class="info-value" id="detailName">-</span></div>
-          <div class="info-item"><span class="info-label">Ngày sinh:</span><span class="info-value" id="detailDob">-</span></div>
-          <div class="info-item"><span class="info-label">Giới tính:</span><span class="info-value" id="detailGender">-</span></div>
-          <div class="info-item"><span class="info-label">Quê quán:</span><span class="info-value" id="detailHometown">-</span></div>
-          <div class="info-item"><span class="info-label">Địa chỉ thường trú:</span><span class="info-value" id="detailAddress">-</span></div>
-          <div class="info-item"><span class="info-label">Ngày cấp:</span><span class="info-value" id="detailIssueDate">-</span></div>
-          <div class="info-item"><span class="info-label">Nơi cấp:</span><span class="info-value" id="detailIssuePlace">-</span></div>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-id-card"></i>
+              </div>
+              <div class="info-label">MSSV:</div>
+              <div class="info-value" id="detailMssv">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-address-card"></i>
+              </div>
+              <div class="info-label">Số CCCD:</div>
+              <div class="info-value" id="detailCccd">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-tag"></i>
+              </div>
+              <div class="info-label">Trạng thái:</div>
+              <div class="info-value">
+                <span class="status-badge status-pending" id="detailStatusBadge">Đang chờ</span>
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-paper-plane"></i>
+              </div>
+              <div class="info-label">Thời gian gửi:</div>
+              <div class="info-value" id="detailSubmitTime">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="fas fa-sync-alt"></i>
+              </div>
+              <div class="info-label">Thời gian cập nhật:</div>
+              <div class="info-value" id="detailUpdateTime">-</div>
+            </div>
+          </div>
         </div>
 
         <!-- Hình ảnh CCCD -->
@@ -502,7 +624,13 @@
         <!-- Lịch sử và ghi chú -->
         <div class="info-card">
           <h6><i class="fas fa-history me-2"></i>Lịch sử xét duyệt</h6>
-          <div class="info-item"><span class="info-label">Ghi chú hiện tại:</span><span class="info-value" id="detailCurrentNote">-</span></div>
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fas fa-sticky-note"></i>
+            </div>
+            <div class="info-label">Ghi chú hiện tại:</div>
+            <div class="info-value" id="detailCurrentNote">-</div>
+          </div>
           <div class="mt-3">
             <label for="rejectReason" class="form-label">Ghi chú/Lý do (nếu từ chối)</label>
             <textarea class="form-control" id="rejectReason" rows="3" placeholder="Nhập lý do từ chối hoặc ghi chú xét duyệt..."></textarea>
@@ -669,7 +797,7 @@ function renderLoaiTaiKhoanCheckbox(data, appId) {
 
   chk.addEventListener('change', () => {
   if (chk.checked) {
-    // Khi tick: hiện input và giữ placeholder “Nhập tên tài khoản”
+    // Khi tick: hiện input và giữ placeholder "Nhập tên tài khoản"
     input.style.display = 'block';
     if (!input.value.trim()) input.placeholder = 'Nhập tên tài khoản';
     input.focus();
@@ -735,7 +863,7 @@ confirmLoaiTkBtn.addEventListener('click', function() {
     return;
   }
 
-  //  Nếu bỏ hết tick thì hiển thị lại nút “Thêm tài khoản”, ẩn “Chấp nhận”
+  //  Nếu bỏ hết tick thì hiển thị lại nút "Thêm tài khoản", ẩn "Chấp nhận"
   if (chosen.length === 0) {
     loaiTkModal.hide();
     selectedAccountsMap[currentAppId] = [];
@@ -750,7 +878,7 @@ confirmLoaiTkBtn.addEventListener('click', function() {
   loaiTkModal.hide();
   renderSelectedLoaiTaiKhoan(chosen, currentAppId);
 
-  //  Hiển thị nút “Chấp nhận”, ẩn “Thêm tài khoản”
+  //  Hiển thị nút "Chấp nhận", ẩn "Thêm tài khoản"
   addTaiKhoanBtn.style.display = 'none';
   approveBtn.style.display = 'inline-block';
 });
@@ -864,7 +992,7 @@ document.getElementById('cancelBtn').addEventListener('click', function() {
   rejectBtn.style.display = 'none';
   addTaiKhoanBtn.style.display = 'none';
 
-  // Chỉ hiện lại “Thêm tài khoản” nếu đang ở trạng thái “Đang chờ”
+  // Chỉ hiện lại "Thêm tài khoản" nếu đang ở trạng thái "Đang chờ"
   if (currentStatus === 'Đang chờ' || currentStatus === 'Chờ duyệt') {
     addTaiKhoanBtn.style.display = 'inline-block';
   }
@@ -881,20 +1009,13 @@ document.getElementById('cancelBtn').addEventListener('click', function() {
         approveBtn.setAttribute('data-app-id', app.id);
         rejectBtn.setAttribute('data-app-id', app.id);
 
-        // Gán thông tin
-        document.getElementById('detailMssv').textContent = app.mssv_input || '-';
-        document.getElementById('detailCccd').textContent = app.cccd_input || '-';
-        document.getElementById('detailName').textContent = app.ho_ten || '-';
-        document.getElementById('detailDob').textContent = app.ngay_sinh || '-';
-        document.getElementById('detailGender').textContent = app.gioi_tinh || '-';
-        document.getElementById('detailHometown').textContent = app.que_quan || '-';
-        document.getElementById('detailAddress').textContent = app.noi_thuong_tru || '-';
-        document.getElementById('detailIssueDate').textContent = app.ngay_cap || '-';
-        document.getElementById('detailIssuePlace').textContent = app.noi_cap || '-';
-        document.getElementById('detailFrontImage').src = app.anh_cccd_moi || app.anh_cccd || '/storage/cccd_images/default.jpg';
-        document.getElementById('detailCurrentNote').textContent = app.ghi_chu || '-';
-        document.getElementById('detailSubmitTime').textContent = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : '-';
-        document.getElementById('detailUpdateTime').textContent = app.updated_at ? new Date(app.updated_at).toLocaleString('vi-VN') : '-';
+    // Gán thông tin
+    document.getElementById('detailMssv').textContent = app.mssv_input || '-';
+    document.getElementById('detailCccd').textContent = app.cccd_input || '-';
+    document.getElementById('detailFrontImage').src = app.anh_cccd_moi || app.anh_cccd || '/storage/cccd_images/default.jpg';
+    document.getElementById('detailCurrentNote').textContent = app.ghi_chu || '-';
+    document.getElementById('detailSubmitTime').textContent = app.created_at ? new Date(app.created_at).toLocaleString('vi-VN') : '-';
+    document.getElementById('detailUpdateTime').textContent = app.updated_at ? new Date(app.updated_at).toLocaleString('vi-VN') : '-';
 
         // Cập nhật trạng thái badge
         const statusBadge = document.getElementById('detailStatusBadge');

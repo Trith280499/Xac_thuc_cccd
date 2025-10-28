@@ -47,15 +47,6 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
-    /**
-     * Relationship với CanCuocCongDan
-     */
-    public function canCuocCongDan(): BelongsTo
-    {
-        return $this->belongsTo(CanCuocCongDan::class, 'so_cccd', 'so_cccd');
-    }
-
     /**
      * Relationship với SinhVien
      */

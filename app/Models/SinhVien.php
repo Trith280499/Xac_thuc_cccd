@@ -20,14 +20,6 @@ class SinhVien extends Model
     ];
 
     /**
-     * Relationship với CanCuocCongDan
-     */
-    public function canCuocCongDan(): BelongsTo
-    {
-        return $this->belongsTo(CanCuocCongDan::class, 'so_cccd', 'so_cccd');
-    }
-
-    /**
      * Relationship với User
      */
     public function user(): BelongsTo
