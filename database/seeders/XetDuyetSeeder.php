@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\XetDuyet;
 
@@ -10,7 +9,7 @@ class XetDuyetSeeder extends Seeder
 {
     public function run(): void
     {
-        $xetDuyetData = [
+        $data = [
             [
                 'mssv_input' => '20240001',
                 'cccd_input' => '001123456789',
@@ -24,7 +23,6 @@ class XetDuyetSeeder extends Seeder
                 'trang_thai' => 'pending',
                 'anh_cccd' => 'https://0711.vn/storage/uploads/img2022071309455272424000.jpg',
                 'ghi_chu' => 'Đang chờ xét duyệt',
-
             ],
             [
                 'mssv_input' => '20240003',
@@ -35,8 +33,6 @@ class XetDuyetSeeder extends Seeder
             ],
         ];
 
-        foreach ($xetDuyetData as $data) {
-            XetDuyet::create($data);
-        }
+        XetDuyet::insert($data);
     }
 }

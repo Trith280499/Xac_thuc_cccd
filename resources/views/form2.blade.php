@@ -250,97 +250,69 @@
     </div>
   </div>
 
-  <div class="container">
+   <div class="container">
     <div class="card shadow-lg p-4">
       <h3 class="text-center mb-4 text-primary">XÁC NHẬN VÀ KHÔI PHỤC TÀI KHOẢN SINH VIÊN</h3>
 
-      @if(!empty($image_url))
+      {{-- Ảnh CCCD (lưu trong session khi xác thực) --}}
+      @if(session('anh_cccd'))
       <div class="text-center mb-4">
-        <img src="{{ $image_url }}"
-          alt="Ảnh CCCD"
-          class="img-fluid rounded shadow-sm"
-          style="max-height: 280px; border: 1px solid #dee2e6;">
+        <img src="{{ session('anh_cccd') }}"
+             alt="Ảnh CCCD"
+             class="img-fluid rounded shadow-sm"
+             style="max-height: 280px; border: 1px solid #dee2e6;">
         <p class="text-muted mt-2">Ảnh CCCD đã tải lên</p>
       </div>
       @endif
-      
+
       <form id="form2" action="/reset/confirm" method="POST">
         @csrf
-
         <!-- Thông tin sinh viên -->
         <div class="form-section">
           <h5>Thông tin sinh viên</h5>
           <div class="mb-3">
-            <label class="form-label fw-bold">Họ và tên</label>
-            <input type="text" name="hoten" class="form-control" value="{{ $cccdData->ho_ten ?? '' }}" placeholder="Nhập họ và tên" required disabled>
-          </div>
-          <div class="mb-3">
             <label class="form-label fw-bold">Căn cước công dân</label>
-            <input type="text" name="cccd" class="form-control" value="{{ $cccdData->so_cccd ?? '' }}" placeholder="Nhập số CCCD" required disabled>
+            <input type="text" class="form-control" 
+                   value="{{ session('cccd_number', session('cccd_input', '')) }}" disabled>
           </div>
           <div class="mb-3">
             <label class="form-label fw-bold">Mã số sinh viên</label>
-            <input type="text" name="mssv" class="form-control" value="{{ $sv->mssv ?? '' }}" placeholder="Nhập MSSV" required disabled>
+            <input type="text" class="form-control" 
+                value="{{ $mssv }}" disabled>
           </div>
         </div>
 
-        <!-- Trạng thái khôi phục -->
+        <!-- Trạng thái khôi phục tài khoản -->
         <div class="form-section">
           <h5>Trạng thái khôi phục tài khoản</h5>
           <div class="table-responsive">
             <table class="table table-bordered align-middle mb-0">
               <thead>
                 <tr>
-                  <th style="width: 50%;">Loại tài khoản</th>
-                  <th style="width: 40%;">Tài khoản</th>
-                  <th style="width: 10%;">Thao tác</th>
+                  <th>Loại tài khoản</th>
+                  <th>Tài khoản</th>
+                  <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td><img src="{{ asset('images/teams.png') }}" alt="Teams" width="16" class="me-2"> Microsoft Teams</td>
-                  <td>
-                    <input type="text" class="form-control"
-                      value="{{ $eduAccounts->first()->ten_tai_khoan ?? '' }}" readonly disabled>
-                    <div class="reset-info" id="teams-info"></div>
-                  </td>
-                  <td class="text-center">
-                    <span class="status-text text-primary" 
-                           data-username="{{ $eduAccounts->first()->ten_tai_khoan ?? '' }}" 
-                           data-type="Teams"
-                           onclick="showConfirmModal(this)">🔄</span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>📝 VLE (học trực tuyến)</td>
-                  <td>
-                    <input type="text" class="form-control"
-                      value="{{ $vleAccounts->first()->ten_tai_khoan ?? '' }}" readonly disabled>
-                    <div class="reset-info" id="vle-info"></div>
-                  </td>
-                  <td class="text-center">
-                    <span class="status-text text-primary" 
-                           data-username="{{ $vleAccounts->first()->ten_tai_khoan ?? '' }}" 
-                           data-type="VLE"
-                           onclick="showConfirmModal(this)">🔄</span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>👨‍🎓 Portal (MSSV)</td>
-                  <td>
-                    <input type="text" class="form-control"
-                      value="{{ $msteamAccounts->first()->ten_tai_khoan ?? '' }}" readonly disabled>
-                    <div class="reset-info" id="portal-info"></div>
-                  </td>
-                  <td class="text-center">
-                    <span class="status-text text-primary" 
-                           data-username="{{ $msteamAccounts->first()->ten_tai_khoan ?? '' }}" 
-                           data-type="Portal"
-                           onclick="showConfirmModal(this)">🔄</span>
-                  </td>
-                </tr>
+               @if(isset($taiKhoanMoiNhat) && $taiKhoanMoiNhat->count() > 0)
+                @foreach($taiKhoanMoiNhat as $acc)
+                  <tr>
+                    <td>{{ $acc->loai_tai_khoan }}</td>
+                    <td>
+                      <input type="text" class="form-control" value="{{ $acc->ten_tai_khoan }}" readonly disabled>
+                    </td>
+                    <td class="text-center">
+                      <span class="status-text text-primary"
+                            data-username="{{ $acc->ten_tai_khoan }}"
+                            data-type="{{ $acc->loai_tai_khoan }}"
+                            onclick="showConfirmModal(this)">🔄</span>
+                    </td>
+                  </tr>
+                @endforeach
+              @else
+                <tr><td colspan="3" class="text-center text-muted">Chưa có tài khoản nào được khôi phục</td></tr>
+              @endif
               </tbody>
             </table>
           </div>
@@ -348,52 +320,40 @@
 
         <!-- Lịch sử khôi phục -->
         <div class="form-section">
-            <h5>Lịch sử khôi phục</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Loại tài khoản</th>
-                            <th>Tài khoản</th>
-                            <th>Mật khẩu mới</th>
-                            <th>Ngày reset</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($lichSuReset as $history)
-                        <tr>
-                            <td>
-                                @if($history->loai_tai_khoan == 'Teams')
-                                    <img src="{{ asset('images/teams.png') }}" alt="Teams" width="16" class="me-2"> Microsoft Teams
-                                @elseif($history->loai_tai_khoan == 'VLE')
-                                    📝 VLE (học trực tuyến)
-                                @elseif($history->loai_tai_khoan == 'Portal')
-                                    👨‍🎓 Portal (MSSV)
-                                @else
-                                    {{ $history->loai_tai_khoan }}
-                                @endif
-                            </td>
-                            <td>{{ $history->tai_khoan }}</td>
-                            <td>
-                                <code class="text-primary">{{ $history->mat_khau_moi }}</code>
-                            </td>
-                            <td>{{ \Carbon\Carbon::parse($history->thoi_gian_reset)->format('d/m/Y H:i:s') }}</td>
-                        </tr>
-                        @endforeach
+          <h5>Lịch sử khôi phục</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Loại tài khoản</th>
+                  <th>Tài khoản</th>
+                  <th>Mật khẩu mới</th>
+                  <th>Ngày reset</th>
+                </tr>
+              </thead>
+              <tbody>
+         @if (!empty($lichSuReset) && count($lichSuReset) > 0)
+        @foreach ($lichSuReset as $history)
+          <tr>
+            <td>{{ $history->loai_tai_khoan }}</td>
+            <td>{{ $history->tai_khoan }}</td>
+            <td><code class="text-primary">{{ $history->mat_khau_moi }}</code></td>
+            <td>{{ \Carbon\Carbon::parse($history->thoi_gian_reset)->format('d/m/Y H:i:s') }}</td>
+          </tr>
+        @endforeach
+      @else
+        <tr>
+          <td colspan="4" class="text-center text-muted">Chưa có lịch sử reset.</td>
+        </tr>
+      @endif
+      </tbody>
+    </table>
+  </div>
+</div>
 
-                        @if ($lichSuReset->isEmpty())
-                        <tr class="text-center text-muted">
-                            <td colspan="4">Chưa có lịch sử khôi phục nào</td>
-                        </tr>
-                        @endif
-                    </tbody>
-                </table>
-            </div>
-        </div>
       </form>
     </div>
   </div>
-
   <script>
     let currentAccount = null;
     let redirectData = null;
